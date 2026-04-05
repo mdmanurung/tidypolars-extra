@@ -35,6 +35,15 @@ class tibble(pl.DataFrame):
     A data frame object that provides methods familiar to R tidyverse users.
     """
     def __init__(self,  *args, **kwargs):
+        # Allow tibble(x=[1,2], y=[3,4]) syntax like R's tibble()
+        # Polars DataFrame doesn't accept keyword column arguments directly
+        if len(args) == 0 and len(kwargs) > 0:
+            # Check if kwargs are column data (lists/Series) vs DataFrame params
+            _df_params = {'data', 'schema', 'schema_overrides', 'orient', 'infer_schema_length',
+                          'strict', 'nan_to_null'}
+            if not any(k in _df_params for k in kwargs):
+                super().__init__(kwargs)
+                return
         super().__init__(*args, **kwargs)
 
     @property
@@ -72,20 +81,27 @@ class tibble(pl.DataFrame):
 
     def __dir__(self):
         _tidypolars_methods = [
-            'arrange', 'bind_cols', 'bind_rows', 'colnames', 'clone', 'count',
-            'crossing',
-            'distinct', 'drop', 'drop_null', 'head', 'fill', 'filter',
-            'group_by', 
-            'inner_join', 'left_join', 'mutate', 'names', 'nest',
-            'nrow', 'ncol',
-            'full_join', 'pivot_longer', 'pivot_wider', 'print',
-            'pull', 'relocate', 'rename',
-            'replace',
-            'replace_null', 'select',
-            'separate', 'set_names',
-            'slice', 'slice_head', 'slice_tail', 'summarize', 'tail',
-            'save_data',
-            'to_pandas', 'to_polars', 'unnest'
+            'add_count',
+            'anti_join', 'arrange',
+            'bind_cols', 'bind_rows',
+            'colnames', 'clone', 'complete', 'count', 'cross_join', 'crossing',
+            'distinct', 'drop', 'drop_na', 'drop_null',
+            'expand', 'extract',
+            'head', 'fill', 'filter', 'full_join',
+            'group_by',
+            'inner_join', 'intersect',
+            'left_join',
+            'mutate', 'names', 'nest', 'nrow', 'ncol',
+            'pivot_longer', 'pivot_wider', 'print', 'pull',
+            'relocate', 'rename', 'rename_with', 'replace',
+            'replace_na', 'replace_null', 'right_join',
+            'save_data', 'select', 'semi_join',
+            'separate', 'separate_rows', 'set_names', 'setdiff',
+            'slice', 'slice_head', 'slice_max', 'slice_min',
+            'slice_sample', 'slice_tail',
+            'summarize', 'tail', 'tally', 'transmute',
+            'to_pandas', 'to_polars',
+            'uncount', 'ungroup', 'union', 'union_all', 'unnest'
         ]
         return _tidypolars_methods
     
@@ -596,10 +612,124 @@ class tibble(pl.DataFrame):
         """
         if (left_on == None) & (right_on == None) & (on == None):
             on = list(set(self.names) & set(df.names))
-        return super().join(df, on, 'outer',
+        return super().join(df, on, 'full',
+                            left_on = left_on,
+                            right_on= right_on,
+                            suffix= suffix,
+                            coalesce=True).pipe(from_polars)
+
+    def right_join(self, df, left_on = None, right_on = None, on = None, suffix = '_right'):
+        """
+        Perform a right join
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to join with.
+        left_on : str, list
+            Join column(s) of the left DataFrame.
+        right_on : str, list
+            Join column(s) of the right DataFrame.
+        on: str, list
+            Join column(s) of both DataFrames. If set, `left_on` and `right_on` should be None.
+        suffix : str
+            Suffix to append to columns with a duplicate name.
+
+        Returns
+        -------
+        tibble
+
+        Examples
+        --------
+        >>> df1.right_join(df2)
+        >>> df1.right_join(df2, on = 'x')
+        >>> df1.right_join(df2, left_on = 'left_x', right_on = 'x')
+        """
+        if (left_on == None) & (right_on == None) & (on == None):
+            on = list(set(self.names) & set(df.names))
+        return super().join(df, on, 'right',
                             left_on = left_on,
                             right_on= right_on,
                             suffix= suffix).pipe(from_polars)
+
+    def semi_join(self, df, left_on = None, right_on = None, on = None):
+        """
+        Perform a semi join (keep rows from left with matches in right)
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to join with.
+        left_on : str, list
+            Join column(s) of the left DataFrame.
+        right_on : str, list
+            Join column(s) of the right DataFrame.
+        on: str, list
+            Join column(s) of both DataFrames. If set, `left_on` and `right_on` should be None.
+
+        Returns
+        -------
+        tibble
+
+        Examples
+        --------
+        >>> df1.semi_join(df2, on = 'x')
+        """
+        if (left_on == None) & (right_on == None) & (on == None):
+            on = list(set(self.names) & set(df.names))
+        return super().join(df, on, 'semi',
+                            left_on = left_on,
+                            right_on= right_on).pipe(from_polars)
+
+    def anti_join(self, df, left_on = None, right_on = None, on = None):
+        """
+        Perform an anti join (keep rows from left without matches in right)
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to join with.
+        left_on : str, list
+            Join column(s) of the left DataFrame.
+        right_on : str, list
+            Join column(s) of the right DataFrame.
+        on: str, list
+            Join column(s) of both DataFrames. If set, `left_on` and `right_on` should be None.
+
+        Returns
+        -------
+        tibble
+
+        Examples
+        --------
+        >>> df1.anti_join(df2, on = 'x')
+        """
+        if (left_on == None) & (right_on == None) & (on == None):
+            on = list(set(self.names) & set(df.names))
+        return super().join(df, on, 'anti',
+                            left_on = left_on,
+                            right_on= right_on).pipe(from_polars)
+
+    def cross_join(self, df, suffix = '_right'):
+        """
+        Perform a cross join (Cartesian product)
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to join with.
+        suffix : str
+            Suffix to append to columns with a duplicate name.
+
+        Returns
+        -------
+        tibble
+
+        Examples
+        --------
+        >>> df1.cross_join(df2)
+        """
+        return super().join(df, how='cross', suffix=suffix).pipe(from_polars)
 
     def pivot_longer(self,
                      cols = None,
@@ -633,10 +763,10 @@ class tibble(pl.DataFrame):
         if isinstance(cols, dict):
             cols = list(cols.keys())
             
-        df_cols = pl.Series(self.names)
         value_vars = self.select(cols).names
-        id_vars = df_cols.filter(df_cols.is_in(value_vars).not_()).to_list()
-        out = super().melt(id_vars, value_vars, names_to, values_to)
+        id_vars = [c for c in self.names if c not in value_vars]
+        out = self.to_polars().unpivot(on=value_vars, index=id_vars,
+                                       variable_name=names_to, value_name=values_to)
         return out.pipe(from_polars)
 
     def pivot_wider(self,
@@ -677,9 +807,8 @@ class tibble(pl.DataFrame):
         >>> df.pivot_wider(names_from = 'variable', values_from = 'value')
         """
         if id_cols == None:
-            df_cols = pl.Series(self.names)
-            from_cols = pl.Series(self.select(names_from, values_from).names)
-            id_cols = df_cols.filter(df_cols.is_in(from_cols).not_()).to_list()
+            from_col_names = self.select(names_from, values_from).names
+            id_cols = [c for c in self.names if c not in from_col_names]
 
         no_id = len(id_cols) == 0
 
@@ -688,14 +817,14 @@ class tibble(pl.DataFrame):
             self = self.mutate(___id__ = pl.lit(1))
 
         out = (
-            super()
+            self.to_polars()
             .pivot(index=id_cols, on=names_from, values=values_from, aggregate_function=values_fn)
             .pipe(from_polars)
         )
 
         if values_fill != None:
-            new_cols = pl.Series(out.names)
-            new_cols = new_cols.filter(~new_cols.is_in(id_cols))
+            id_col_set = set(_as_list(id_cols))
+            new_cols = [c for c in out.names if c not in id_col_set]
             fill_exprs = [col(new_col).fill_null(values_fill) for new_col in new_cols]
             out = out.mutate(*fill_exprs)
 
@@ -797,7 +926,7 @@ class tibble(pl.DataFrame):
             after = locs_df.select(after).get_column(after)
             locs_start = locs_all.filter(locs_all <= after)
 
-        locs_start = locs_start.filter(~locs_start.is_in(locs_relocate))
+        locs_start = locs_start.filter(~locs_start.is_in(locs_relocate.implode()))
         final_order = pl.concat([locs_start, locs_relocate, locs_all]).unique(maintain_order = True)
         final_order = cols_all[final_order].to_list()
 
@@ -1132,7 +1261,105 @@ class tibble(pl.DataFrame):
             df = super(tibble, self).tail(n)
         df = df.select(col_order)
         return df.pipe(from_polars)
-    
+
+    def slice_min(self, order_by, n = 1, *, by = None, with_ties = True):
+        """
+        Select rows with the smallest values of a column
+
+        Parameters
+        ----------
+        order_by : str, Expr
+            Column to order by
+        n : int
+            Number of rows to return
+        by : str, list
+            Columns to group by
+        with_ties : bool
+            If True, return all rows with ties
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = [1, 2, 3, 4], g = ['a', 'a', 'b', 'b'])
+        >>> df.slice_min('x', n = 1)
+        >>> df.slice_min('x', n = 1, by = 'g')
+        """
+        order_col = _col_expr(order_by)
+        if with_ties:
+            if _uses_by(by):
+                return super(tibble, self).group_by(by).map_groups(
+                    lambda x: x.filter(x.select(order_col.rank('min')).to_series() <= n)
+                ).pipe(from_polars)
+            else:
+                return self.filter(order_col.rank('min') <= n)
+        else:
+            return self.arrange(order_by).slice_head(n = n, by = by)
+
+    def slice_max(self, order_by, n = 1, *, by = None, with_ties = True):
+        """
+        Select rows with the largest values of a column
+
+        Parameters
+        ----------
+        order_by : str, Expr
+            Column to order by
+        n : int
+            Number of rows to return
+        by : str, list
+            Columns to group by
+        with_ties : bool
+            If True, return all rows with ties
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = [1, 2, 3, 4], g = ['a', 'a', 'b', 'b'])
+        >>> df.slice_max('x', n = 1)
+        >>> df.slice_max('x', n = 1, by = 'g')
+        """
+        order_col = _col_expr(order_by)
+        if with_ties:
+            if _uses_by(by):
+                return super(tibble, self).group_by(by).map_groups(
+                    lambda x: x.filter(x.select(order_col.rank('max')).to_series() > x.height - n)
+                ).pipe(from_polars)
+            else:
+                return self.filter(order_col.rank('min') > self.nrow - n)
+        else:
+            return self.arrange(desc(order_by)).slice_head(n = n, by = by)
+
+    def slice_sample(self, n = None, prop = None, *, by = None, replace = False, seed = None):
+        """
+        Randomly sample rows
+
+        Parameters
+        ----------
+        n : int
+            Number of rows to sample
+        prop : float
+            Fraction of rows to sample (0 to 1)
+        by : str, list
+            Columns to group by
+        replace : bool
+            Sample with replacement
+        seed : int
+            Random seed
+
+        Examples
+        --------
+        >>> df.slice_sample(n = 5)
+        >>> df.slice_sample(prop = 0.5)
+        >>> df.slice_sample(n = 2, by = 'group')
+        """
+        if _uses_by(by):
+            return super(tibble, self).group_by(by).map_groups(
+                lambda x: x.sample(n = n, fraction = prop,
+                                   with_replacement = replace, seed = seed)
+            ).pipe(from_polars)
+        else:
+            return super(tibble, self).sample(
+                n = n, fraction = prop,
+                with_replacement = replace, seed = seed
+            ).pipe(from_polars)
+
     def summarise(self, *args,
                   by = None,
                   **kwargs):
@@ -1423,6 +1650,338 @@ class tibble(pl.DataFrame):
         for var,_ in kwargs.items():
             out = out.explode(var)
         return out.pipe(from_polars)
+
+    # ---- Set Operations ----
+
+    def union(self, df):
+        """
+        Rows in either table, deduplicated
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to combine with
+
+        Examples
+        --------
+        >>> df1.union(df2)
+        """
+        return self.bind_rows(df).distinct()
+
+    def union_all(self, df):
+        """
+        Rows in either table, keeping duplicates
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to combine with
+
+        Examples
+        --------
+        >>> df1.union_all(df2)
+        """
+        return self.bind_rows(df)
+
+    def intersect(self, df):
+        """
+        Rows that appear in both tables
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to intersect with
+
+        Examples
+        --------
+        >>> df1.intersect(df2)
+        """
+        common_cols = list(set(self.names) & set(df.names))
+        return self.semi_join(df, on = common_cols).distinct()
+
+    def setdiff(self, df):
+        """
+        Rows in first table but not in second
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to compare against
+
+        Examples
+        --------
+        >>> df1.setdiff(df2)
+        """
+        common_cols = list(set(self.names) & set(df.names))
+        return self.anti_join(df, on = common_cols)
+
+    # ---- Additional dplyr verbs ----
+
+    def transmute(self, *args, by = None, **kwargs):
+        """
+        Mutate and keep only the new columns (plus grouping columns)
+
+        Parameters
+        ----------
+        *args : Expr
+            Column expressions to add
+        by : str, list
+            Columns to group by
+        **kwargs : Expr
+            Column expressions to add
+
+        Examples
+        --------
+        >>> df.transmute(double_x = col('x') * 2)
+        """
+        new_cols = list(kwargs.keys())
+        for arg in _as_list(args):
+            if hasattr(arg, 'meta'):
+                try:
+                    new_cols.append(arg.meta.output_name())
+                except Exception:
+                    pass
+        keep_cols = (_as_list(by) if _uses_by(by) else []) + new_cols
+        return self.mutate(*args, by = by, **kwargs).select(keep_cols)
+
+    def rename_with(self, fn, cols = None):
+        """
+        Rename columns using a function
+
+        Parameters
+        ----------
+        fn : callable
+            Function to apply to column names
+        cols : list, optional
+            Columns to rename. If None, rename all columns.
+
+        Examples
+        --------
+        >>> df.rename_with(str.upper)
+        >>> df.rename_with(str.lower, cols = ['X', 'Y'])
+        """
+        if cols is None:
+            target_cols = self.names
+        else:
+            target_cols = _as_list(cols)
+        rename_dict = {c: fn(c) for c in target_cols}
+        return self.rename(rename_dict)
+
+    def add_count(self, *args, name = 'n'):
+        """
+        Add a count column without collapsing rows
+
+        Parameters
+        ----------
+        *args : str
+            Columns to group by for counting
+        name : str
+            Name of the count column
+
+        Examples
+        --------
+        >>> df.add_count('group')
+        """
+        by = list(args) if len(args) > 0 else None
+        if _uses_by(by):
+            return self.mutate(**{name: pl.len()}, by = by)
+        else:
+            return self.mutate(**{name: pl.len()})
+
+    def tally(self, name = 'n'):
+        """
+        Count observations (simple count)
+
+        Parameters
+        ----------
+        name : str
+            Name of the count column
+
+        Examples
+        --------
+        >>> df.tally()
+        """
+        return self.summarize(**{name: pl.len()})
+
+    def uncount(self, weights, remove = True):
+        """
+        Inverse of count: duplicate rows based on a weight column
+
+        Parameters
+        ----------
+        weights : str
+            Column containing the number of times to repeat each row
+        remove : bool
+            If True, remove the weights column
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['a', 'b'], n = [2, 3])
+        >>> df.uncount('n')
+        """
+        out = (self.to_polars()
+               .with_columns(
+                   pl.col(weights).cast(pl.UInt32)
+               )
+               .select(
+                   pl.all().repeat_by(pl.col(weights))
+               )
+               .explode(pl.all()))
+        if remove:
+            out = out.drop(weights)
+        return out.pipe(from_polars)
+
+    # ---- tidyr functions ----
+
+    def complete(self, *args, fill = None):
+        """
+        Complete a data frame with all combinations of specified columns,
+        filling missing values with NA (or specified fill values)
+
+        Parameters
+        ----------
+        *args : str
+            Columns to expand into all combinations
+        fill : dict, optional
+            Dictionary of {column_name: fill_value} for filling NAs
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = [1, 1, 2], y = ['a', 'b', 'a'], val = [10, 20, 30])
+        >>> df.complete('x', 'y')
+        """
+        expand_cols = list(args)
+        # Build all combinations via cross join
+        unique_frames = [
+            self.distinct(c).select(c) for c in expand_cols
+        ]
+        grid = unique_frames[0]
+        for frame in unique_frames[1:]:
+            grid = grid.cross_join(frame)
+        # Left join original data onto the grid
+        other_cols = [c for c in self.names if c not in expand_cols]
+        out = grid.left_join(self, on = expand_cols)
+        if fill is not None:
+            out = out.replace_null(fill)
+        # Restore original column order
+        out = out.select([c for c in self.names if c in out.names])
+        return out
+
+    def expand(self, *args):
+        """
+        Create a tibble of all unique combinations of specified columns
+
+        Parameters
+        ----------
+        *args : str
+            Columns to expand
+
+        Examples
+        --------
+        >>> df.expand('x', 'y')
+        """
+        expand_cols = list(args)
+        unique_frames = [
+            self.distinct(c).select(c) for c in expand_cols
+        ]
+        grid = unique_frames[0]
+        for frame in unique_frames[1:]:
+            grid = grid.cross_join(frame)
+        return grid
+
+    def separate_rows(self, col, sep = ','):
+        """
+        Separate a column into rows by splitting on a separator
+
+        Parameters
+        ----------
+        col : str
+            Column to separate
+        sep : str
+            Separator pattern to split on
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['a,b', 'c,d'], y = [1, 2])
+        >>> df.separate_rows('x', sep = ',')
+        """
+        return (self.to_polars()
+                .with_columns(pl.col(col).str.split(sep))
+                .explode(col)
+                .pipe(from_polars))
+
+    def extract(self, col, into, regex, remove = True):
+        """
+        Extract capture groups from a string column into new columns
+
+        Parameters
+        ----------
+        col : str
+            Column to extract from
+        into : list
+            Names for the new columns
+        regex : str
+            Regular expression with capture groups
+        remove : bool
+            If True, remove the input column
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['a-1', 'b-2', 'c-3'])
+        >>> df.extract('x', into = ['letter', 'number'], regex = r'(\\w)-(\\d)')
+        """
+        extracted = self.to_polars().select(
+            pl.col(col).str.extract_groups(regex)
+        ).unnest(col)
+        # Rename extracted columns to match 'into'
+        old_names = extracted.columns
+        rename_map = {old: new for old, new in zip(old_names, into)}
+        extracted = extracted.rename(rename_map)
+        out = self.bind_cols(from_polars(extracted))
+        if remove:
+            out = out.drop(col)
+        return out
+
+    def drop_na(self, *args):
+        """
+        Drop rows with missing values (alias for drop_null)
+
+        Parameters
+        ----------
+        *args : str
+            Columns to check for missing values. If empty, checks all columns.
+
+        Examples
+        --------
+        >>> df.drop_na()
+        >>> df.drop_na('x', 'y')
+        """
+        return self.drop_null(*args)
+
+    def replace_na(self, replace = None):
+        """
+        Replace missing values (alias for replace_null)
+
+        Parameters
+        ----------
+        replace : dict, scalar
+            Values to replace NAs with
+
+        Examples
+        --------
+        >>> df.replace_na({'x': 0, 'y': 'missing'})
+        """
+        return self.replace_null(replace)
+
+    def ungroup(self):
+        """
+        Remove grouping (returns self for ungrouped tibble)
+
+        Examples
+        --------
+        >>> df.ungroup()
+        """
+        return self
 
     def glimpse(self, regex='.'):
         """
@@ -2100,7 +2659,8 @@ class tibble(pl.DataFrame):
 
 
         home_dir = os.path.expanduser("~")
-        print(f"Save at: {"~"+folder.replace(home_dir, '')}") if not silently else None
+        short_path = "~" + folder.replace(home_dir, '')
+        print(f"Save at: {short_path}") if not silently else None
         
     def to_excel(self, *args, **kws):
         """
@@ -2773,6 +3333,7 @@ class TibbleGroupBy(pl.dataframe.group_by.GroupBy):
 
     def __init__(self, df, by, *args, **kwargs):
         assert isinstance(by, str) or isinstance(by, list), "Use list or string to group by."
+        kwargs.setdefault('predicates', None)
         super().__init__(df, by, *args, **kwargs)
         self.df = df
         self.by = by if isinstance(by, list) else [by]
@@ -2792,6 +3353,22 @@ class TibbleGroupBy(pl.dataframe.group_by.GroupBy):
     def summarize(self, *args, **kwargs):
         out = self.map_groups(lambda x: from_polars(x).summarise(by=self.by, *args, **kwargs))
         return out
+
+    def ungroup(self):
+        """Remove grouping and return a regular tibble"""
+        return from_polars(self.df)
+
+    def n_groups(self):
+        """Return the number of groups"""
+        return self.df.distinct(*self.by).select(self.by).nrow
+
+    def group_keys(self):
+        """Return a tibble of unique group combinations"""
+        return self.df.distinct(*self.by).select(self.by)
+
+    def group_split(self):
+        """Split into a list of tibbles, one per group"""
+        return [from_polars(df) for df in self.df.to_polars().partition_by(self.by)]
 
 def from_polars(df):
     """

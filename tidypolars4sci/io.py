@@ -12,8 +12,12 @@ from typing import Callable, List
 from typing import Callable, List, Any
 from typing import Dict, Optional, Tuple
 # google spreadsheet
-import gspread
-from google.oauth2.service_account import Credentials
+try:
+    import gspread
+    from google.oauth2.service_account import Credentials
+except ImportError:
+    gspread = None
+    Credentials = None
 
 __all__ = [
     "read_data",

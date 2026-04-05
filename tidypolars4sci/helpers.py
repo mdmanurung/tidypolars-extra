@@ -17,7 +17,8 @@ from .utils import (
 
 
 __all__ = ["contains", "ends_with", "everything", "starts_with",
-           'matches', "desc", "across", "lag", "DescCol", "where"]
+           'matches', "desc", "across", "lag", "DescCol", "where",
+           "if_all", "if_any"]
 
 def contains(match, ignore_case = True):
     """
@@ -180,6 +181,48 @@ def lag(x, n: int = 1, default = None):
     """
     x = _col_expr(x)
     return x.shift(n, fill_value = default)
+
+def if_all(cols, fn = lambda x: x.is_not_null()):
+    """
+    Check if all conditions are true across columns
+
+    Parameters
+    ----------
+    cols : list
+        Columns to check
+    fn : callable
+        Function returning a boolean expression for each column
+
+    Examples
+    --------
+    >>> df.filter(tp.if_all(['x', 'y'], lambda c: c > 0))
+    """
+    import functools
+    _cols = _col_exprs(_as_list(cols))
+    exprs = [fn(c) for c in _cols]
+    return functools.reduce(lambda a, b: a & b, exprs)
+
+
+def if_any(cols, fn = lambda x: x.is_not_null()):
+    """
+    Check if any condition is true across columns
+
+    Parameters
+    ----------
+    cols : list
+        Columns to check
+    fn : callable
+        Function returning a boolean expression for each column
+
+    Examples
+    --------
+    >>> df.filter(tp.if_any(['x', 'y'], lambda c: c > 0))
+    """
+    import functools
+    _cols = _col_exprs(_as_list(cols))
+    exprs = [fn(c) for c in _cols]
+    return functools.reduce(lambda a, b: a | b, exprs)
+
 
 def where(col_type):
     """
