@@ -99,3 +99,93 @@ df = tp.from_polars(df)
 ## Similar projects
 
 - [tidypolars](https://pypi.org/project/tidypolars/): tidypolars was the starting point of tidypolars4sci
+
+## Additional implementations compared to the original tidypolars
+
+**tidypolars4sci** extends the original [tidypolars](https://github.com/markfairbanks/tidypolars) with the following additional features:
+
+### New dplyr verbs
+
+| Function | Description |
+|----------|-------------|
+| `right_join()` | Keep all rows from the right table |
+| `semi_join()` | Keep rows from left with matches in right |
+| `anti_join()` | Keep rows from left without matches in right |
+| `cross_join()` | Cartesian product of two tables |
+| `slice_min()` | Select rows with smallest values (with ties support) |
+| `slice_max()` | Select rows with largest values (with ties support) |
+| `slice_sample()` | Randomly sample rows (with `n`, `prop`, `by`) |
+| `transmute()` | Mutate and keep only new columns |
+| `rename_with()` | Rename columns using a function |
+| `add_count()` | Add count column without collapsing rows |
+| `tally()` | Simple observation count |
+| `uncount()` | Inverse of count: duplicate rows by weight |
+| `ungroup()` | Remove grouping from grouped tibble |
+
+### New tidyr functions
+
+| Function | Description |
+|----------|-------------|
+| `complete()` | Complete all combinations of columns, filling missing with NA |
+| `expand()` | Create tibble of all unique column combinations |
+| `expand_grid()` | Standalone Cartesian product of named lists |
+| `nesting()` | Create tibble of observed (existing) combinations only |
+| `separate_rows()` | Separate a column into rows by splitting on a delimiter |
+| `extract()` | Extract regex capture groups into new columns |
+| `drop_na()` | Alias for `drop_null()` (tidyr naming) |
+| `replace_na()` | Alias for `replace_null()` (tidyr naming) |
+
+### Set operations
+
+| Function | Description |
+|----------|-------------|
+| `union()` | Rows in either table, deduplicated |
+| `union_all()` | Rows in either table, keeping duplicates |
+| `intersect()` | Rows that appear in both tables |
+| `setdiff()` | Rows in first table but not in second |
+
+### Window and ranking functions
+
+| Function | Description |
+|----------|-------------|
+| `dense_rank()` | Rank with no gaps for ties |
+| `min_rank()` | Rank with gaps at ties |
+| `percent_rank()` | Rescale ranks to [0, 1] |
+| `cume_dist()` | Cumulative distribution (proportion of values <= current) |
+| `ntile()` | Divide into n roughly equal buckets |
+| `nth()` | Get the nth value (with out-of-bounds default) |
+| `cumall()` | Cumulative all (boolean) |
+| `cumany()` | Cumulative any (boolean) |
+| `cummean()` | Cumulative mean |
+
+### Conditional and grouping functions
+
+| Function | Description |
+|----------|-------------|
+| `case_match()` | Switch-like pattern matching on values |
+| `na_if()` | Replace a specific value with null |
+| `consecutive_id()` | Generate consecutive group IDs on value changes |
+| `if_all()` | Check if all conditions are true across columns |
+| `if_any()` | Check if any condition is true across columns |
+
+### GroupBy enhancements
+
+| Function | Description |
+|----------|-------------|
+| `n_groups()` | Return the number of groups |
+| `group_keys()` | Return tibble of unique group combinations |
+| `group_split()` | Split into a list of tibbles, one per group |
+
+### Science-oriented features (from tidypolars4sci)
+
+- `freq()` — Frequency tables with confidence intervals
+- `tab()` — Cross-tabulation / contingency tables
+- `descriptive_statistics()` — Descriptive statistics summary
+- `to_latex()` — Publication-ready LaTeX table output
+- `read_data()` — Universal reader for CSV, Excel, Stata, SPSS, R, and Google Sheets
+- `save_data()` — Auto-detect format and save
+- `to_dta()` — Export to Stata format
+- Date/time functions via lubridate-style API
+- Type conversion with R-style naming (`as_factor`, `as_character`, etc.)
+- Column selection helpers (`matches()`, `where()`, `across()`, etc.)
+- String manipulation via stringr-style API
