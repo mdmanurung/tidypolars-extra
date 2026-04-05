@@ -15,5 +15,8 @@ DATA_DIR = Path(__file__).parent
 
 mtcars = __load_mtcars__()
 diamonds = __load_diamonds__()
-starwars = __load_starwars__()
+try:
+    starwars = __load_starwars__()
+except (ImportError, Exception):
+    starwars = None
 vote = __load_vote__()

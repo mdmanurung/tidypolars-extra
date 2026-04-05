@@ -27,6 +27,13 @@ nav:
     - Pivot wide: case-studies/pivot-wide.md
     - Regression Tables: case-studies/regression-table.md
     - Standardizing Variables: case-studies/standardizing.md
+    - Join Operations: case-studies/joins.md
+    - Advanced Row Selection: case-studies/slicing.md
+    - Set Operations: case-studies/set-operations.md
+    - Reshaping & Tidying: case-studies/reshaping.md
+    - Ranking & Window Functions: case-studies/window-functions.md
+    - Conditional Functions: case-studies/conditionals.md
+    - Additional dplyr Verbs: case-studies/additional-verbs.md
   - Performance:
     - performance/overview.md
     - performance/filter.md
