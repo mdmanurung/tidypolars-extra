@@ -420,3 +420,68 @@ def test_sqrt():
     vals = actual.pull('s').to_list()
     assert abs(vals[0] - 2.0) < 0.01
     assert abs(vals[1] - 3.0) < 0.01
+
+
+# ===== Edge Case Tests =====
+
+def test_slice_min_with_ties():
+    """slice_min with_ties returns all tied values"""
+    df = tp.tibble({'x': [1, 1, 2, 3, 4]})
+    actual = df.slice_min('x', n=2)
+    assert sorted(actual.pull('x').to_list()) == [1, 1, 2]
+
+def test_slice_max_with_ties():
+    """slice_max with_ties returns all tied values"""
+    df = tp.tibble({'x': [1, 2, 3, 3, 4]})
+    actual = df.slice_max('x', n=2)
+    assert sorted(actual.pull('x').to_list()) == [3, 3, 4]
+
+def test_slice_max_grouped_with_ties():
+    """slice_max grouped with_ties works correctly"""
+    df = tp.tibble({'x': [3, 1, 4, 2], 'g': ['a', 'a', 'b', 'b']})
+    actual = df.slice_max('x', n=1, by='g')
+    assert sorted(actual.pull('x').to_list()) == [3, 4]
+
+def test_uncount_with_zero():
+    """uncount drops rows with weight 0"""
+    df = tp.tibble({'x': ['a', 'b', 'c'], 'n': [2, 0, 3]})
+    actual = df.uncount('n')
+    assert actual.nrow == 5
+    assert 'b' not in actual.pull('x').to_list()
+
+def test_case_match_validation():
+    """case_match raises error on odd number of args"""
+    df = tp.tibble({'x': [1, 2, 3]})
+    try:
+        df.mutate(label=tp.case_match(col('x'), 1, 'one', 2))
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
+
+def test_case_match_no_args():
+    """case_match raises error with no args"""
+    df = tp.tibble({'x': [1, 2, 3]})
+    try:
+        df.mutate(label=tp.case_match(col('x')))
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
+
+def test_nth_with_default():
+    """nth returns default for out-of-bounds index"""
+    df = tp.tibble({'x': [10, 20, 30]})
+    actual = df.summarize(val=tp.nth('x', 10, default=-1))
+    assert actual.pull('val').to_list() == [-1]
+
+def test_consecutive_id_multiple_cols():
+    """consecutive_id tracks changes across multiple columns"""
+    df = tp.tibble({'x': ['a', 'a', 'b', 'b'], 'y': [1, 2, 2, 2]})
+    actual = df.mutate(id=tp.consecutive_id('x', 'y'))
+    assert actual.pull('id').to_list() == [1, 2, 3, 3]
+
+def test_na_if_string():
+    """na_if works with string columns"""
+    df = tp.tibble({'x': ['a', 'b', 'c']})
+    actual = df.mutate(x=tp.na_if(col('x'), 'b'))
+    assert actual.pull('x').null_count() == 1
+    assert actual.pull('x').to_list() == ['a', None, 'c']

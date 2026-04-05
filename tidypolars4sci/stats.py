@@ -513,6 +513,9 @@ def nth(x, idx, default=None):
     >>> df.summarize(second = tp.nth('x', 1))
     """
     x = _col_expr(x)
+    if default is not None:
+        # Use get() which returns null for out-of-bounds, then fill_null
+        return x.get(idx, null_on_oob=True).fill_null(default)
     return x.gather(idx)
 
 
@@ -567,52 +570,3 @@ def cummean(x):
     return x.cum_sum() / (pl.int_range(pl.len()) + 1)
 
 
-def log(x):
-    """
-    Natural logarithm
-
-    Parameters
-    ----------
-    x : Expr, str
-        Column to operate on
-
-    Examples
-    --------
-    >>> df.mutate(log_x = tp.log('x'))
-    """
-    x = _col_expr(x)
-    return x.log()
-
-
-def log10(x):
-    """
-    Base-10 logarithm
-
-    Parameters
-    ----------
-    x : Expr, str
-        Column to operate on
-
-    Examples
-    --------
-    >>> df.mutate(log10_x = tp.log10('x'))
-    """
-    x = _col_expr(x)
-    return x.log(10)
-
-
-def sqrt(x):
-    """
-    Square root
-
-    Parameters
-    ----------
-    x : Expr, str
-        Column to operate on
-
-    Examples
-    --------
-    >>> df.mutate(sqrt_x = tp.sqrt('x'))
-    """
-    x = _col_expr(x)
-    return x.sqrt()

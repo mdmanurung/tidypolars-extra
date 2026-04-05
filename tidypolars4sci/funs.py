@@ -271,6 +271,8 @@ def case_match(x, *args, _default = None):
     >>>                          _default = 'other')
     >>> )
     """
+    if len(args) == 0 or len(args) % 2 != 0:
+        raise ValueError("case_match requires pairs of (match_value, result) arguments")
     x = _col_expr(x)
     match_vals = [args[i] for i in range(0, len(args), 2)]
     results = [args[i] for i in range(1, len(args), 2)]

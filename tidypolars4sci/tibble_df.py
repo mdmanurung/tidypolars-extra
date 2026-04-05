@@ -1285,12 +1285,13 @@ class tibble(pl.DataFrame):
         """
         order_col = _col_expr(order_by)
         if with_ties:
+            rank_expr = order_col.rank('dense')
             if _uses_by(by):
                 return super(tibble, self).group_by(by).map_groups(
-                    lambda x: x.filter(x.select(order_col.rank('min')).to_series() <= n)
+                    lambda x: x.filter(x.select(rank_expr).to_series() <= n)
                 ).pipe(from_polars)
             else:
-                return self.filter(order_col.rank('min') <= n)
+                return self.filter(rank_expr <= n)
         else:
             return self.arrange(order_by).slice_head(n = n, by = by)
 
@@ -1317,12 +1318,14 @@ class tibble(pl.DataFrame):
         """
         order_col = _col_expr(order_by)
         if with_ties:
+            # Rank descending: highest value gets rank 1
+            rank_expr = order_col.rank('dense', descending=True)
             if _uses_by(by):
                 return super(tibble, self).group_by(by).map_groups(
-                    lambda x: x.filter(x.select(order_col.rank('max')).to_series() > x.height - n)
+                    lambda x: x.filter(x.select(rank_expr).to_series() <= n)
                 ).pipe(from_polars)
             else:
-                return self.filter(order_col.rank('min') > self.nrow - n)
+                return self.filter(rank_expr <= n)
         else:
             return self.arrange(desc(order_by)).slice_head(n = n, by = by)
 
@@ -1820,6 +1823,7 @@ class tibble(pl.DataFrame):
         >>> df.uncount('n')
         """
         out = (self.to_polars()
+               .filter(pl.col(weights) > 0)
                .with_columns(
                    pl.col(weights).cast(pl.UInt32)
                )
