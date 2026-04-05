@@ -2022,7 +2022,7 @@ class tibble(pl.DataFrame):
         header_missing = 'Miss'
         header_missing_perc = '(%)'
         header_head = 'Head'
-        # 
+        #
         length_col  = np.max([len(header_var)] +
                              [len(col) for col  in df.columns])
         length_type = np.max([len(header_type)] +
@@ -2035,7 +2035,7 @@ class tibble(pl.DataFrame):
         length_missing = np.max([len(header_missing)] +
                                 df.isna().sum().astype(str).apply(len).tolist())
         try:
-            length_missing_perc = np.max([len(header_missing_perc), 
+            length_missing_perc = np.max([len(header_missing_perc),
                                             len((100*df.isna().sum()/df.shape[0])
                                                 .max().astype(int)
                                                 .astype(str))+2]
@@ -2044,7 +2044,7 @@ class tibble(pl.DataFrame):
             length_missing_perc = 3
 
         length_head = size_col - (length_col + length_type + length_nvalues + length_missing )
-        # 
+        #
         header = (f"{header_var:>{length_col}s} "+
                   f"{header_type:{length_type}s}"+
                   f"{header_uniq:>{length_nvalues}s} "+
@@ -2059,10 +2059,10 @@ class tibble(pl.DataFrame):
             nvalues = len(df[col].unique())
             missings = df[col].isna().sum()
             missings_perc = str(int(100*missings/self.nrow))+"%"
-            # 
+            #
             vals = str(df[col].values)
             vals = vals[:length_head] + (vals[length_head+1:], '...')[len(vals) > length_head]
-            # 
+            #
             print(f"{col:>{length_col}.{length_col}s} "+
                   f"{'<'+dtype+'>':{length_type}.{length_type}s}"+
                   f"{nvalues:>{length_nvalues}d} "+
@@ -2110,45 +2110,62 @@ class tibble(pl.DataFrame):
     # -------------------------------------------------
     def replace(self, rep, regex=False):
         """
-        Replace method from polars pandas. Replaces values of a column.
+        Replace values in columns.
 
         Parameters
         ----------
         rep : dict
-            Format to use polars' replace:
-                {<varname>:{<old value>:<new value>, ...}}
-            Format to use pandas' replace:
-                {<old value>:<new value>, ...}
+            Column-specific format (Polars):
+                {<varname>: {<old value>: <new value>, ...}}
+            Global format (applied across all columns):
+                {<old value>: <new value>, ...}
 
         regex : bool
-            If true, replace using regular expression. It uses pandas
-            replace()
+            If true, treat keys as regular expressions (string columns only).
 
         Returns
         -------
         tibble
-            Original tibble with values of columns replaced based on
-            rep`.
+            Original tibble with values replaced.
         """
-        if regex or not all(isinstance(value, dict) for value in rep.values()):
-            engine = 'pandas'
-        else:
-            engine = 'polars'
-            
-        if engine=='polars':
+        # Determine if rep is column-specific ({col: {old: new}}) or global ({old: new})
+        is_column_specific = all(isinstance(value, dict) for value in rep.values())
+
+        if is_column_specific and not regex:
+            # Column-specific value replacement using Polars
             out = self.to_polars()
-            for var, rep in rep.items():
+            for var, mapping in rep.items():
                 try:
-                    out = out.with_columns(**{var : pl.col(var).replace(rep)})
-                except :
-                    out = out.with_columns(**{var : pl.col(var).replace_strict(rep)})
-            out = out.pipe(from_polars)
-        else:
-            out = self.to_pandas()
-            out = out.replace(to_replace=rep, regex=regex)
-            out = out.pipe(from_pandas)
-                    
-        return out
+                    out = out.with_columns(**{var: pl.col(var).replace(mapping)})
+                except:
+                    out = out.with_columns(**{var: pl.col(var).replace_strict(mapping)})
+            return out.pipe(from_polars)
+
+        if regex:
+            # Regex replacement using Polars str.replace_all on string columns
+            out = self.to_polars()
+            str_cols = [c for c, dt in zip(out.columns, out.dtypes)
+                        if dt == pl.Utf8 or dt == pl.Categorical or dt == pl.String]
+            for pattern, replacement in rep.items():
+                exprs = [pl.col(c).str.replace_all(str(pattern), str(replacement))
+                         for c in str_cols]
+                if exprs:
+                    out = out.with_columns(exprs)
+            return out.pipe(from_polars)
+
+        # Global (non-regex) value replacement using Polars
+        out = self.to_polars()
+        for old_val, new_val in rep.items():
+            exprs = []
+            for c in out.columns:
+                exprs.append(
+                    pl.when(pl.col(c) == old_val)
+                    .then(pl.lit(new_val))
+                    .otherwise(pl.col(c))
+                    .alias(c)
+                )
+            out = out.with_columns(exprs)
+        return out.pipe(from_polars)
         
     def print(self, n=1000, ncols=1000, str_length=1000, digits=2):
         """
