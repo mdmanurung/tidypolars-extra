@@ -35,7 +35,12 @@ class tibble(pl.DataFrame):
     A data frame object that provides methods familiar to R tidyverse users.
     """
     def __init__(self,  *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        # Support R-like keyword argument syntax: tibble(x=[1,2], y=[3,4])
+        # by converting kwargs to a dict if no positional args are provided
+        if len(args) == 0 and kwargs:
+            super().__init__(kwargs)
+        else:
+            super().__init__(*args, **kwargs)
 
     @property
     def _constructor(self):
@@ -228,7 +233,7 @@ class tibble(pl.DataFrame):
 
         return out
 
-    def distinct(self, *args, keep_all = True):
+    def distinct(self, *args, keep_all = False):
         """
         Select distinct/unique rows
 
@@ -596,10 +601,11 @@ class tibble(pl.DataFrame):
         """
         if (left_on == None) & (right_on == None) & (on == None):
             on = list(set(self.names) & set(df.names))
-        return super().join(df, on, 'outer',
+        return super().join(df, on, 'full',
                             left_on = left_on,
                             right_on= right_on,
-                            suffix= suffix).pipe(from_polars)
+                            suffix= suffix,
+                            coalesce=True).pipe(from_polars)
 
     def pivot_longer(self,
                      cols = None,
@@ -636,7 +642,7 @@ class tibble(pl.DataFrame):
         df_cols = pl.Series(self.names)
         value_vars = self.select(cols).names
         id_vars = df_cols.filter(df_cols.is_in(value_vars).not_()).to_list()
-        out = super().melt(id_vars, value_vars, names_to, values_to)
+        out = super().unpivot(on=value_vars, index=id_vars, variable_name=names_to, value_name=values_to)
         return out.pipe(from_polars)
 
     def pivot_wider(self,
@@ -688,7 +694,7 @@ class tibble(pl.DataFrame):
             self = self.mutate(___id__ = pl.lit(1))
 
         out = (
-            super()
+            self.to_polars()
             .pivot(index=id_cols, on=names_from, values=values_from, aggregate_function=values_fn)
             .pipe(from_polars)
         )
@@ -803,22 +809,22 @@ class tibble(pl.DataFrame):
 
         return self.select(final_order)
    
-    def rename(self, columns=None, regex=False, tolower=False, strict=False):
+    def rename(self, *args, regex=False, tolower=False, strict=False, **kwargs):
         """
         Rename columns
 
         Parameters
         ----------
-        columns : dict, default None
-            Dictionary mapping of old and new names
-            {<old name>:<new name>, ...}
-
+        *args : str or dict
+            If a single dict is provided, it is used as {old_name: new_name}.
+            If strings are provided, they are treated as pairs: new_name, old_name, ...
         regex : bool, default False
             If True, uses regular expression replacement
             {<matched from>:<matched to>}
-
         tolower : bool, default False
             If True, convert all to lower case
+        **kwargs : str
+            Keyword arguments in the form new_name='old_name'
 
         Returns
         ------- 
@@ -829,9 +835,27 @@ class tibble(pl.DataFrame):
         --------
         >>> df = tp.tibble({'x': range(3), 't': range(3), 'z': ['a', 'a', 'b']})
         >>> df.rename({'x': 'new_x'}) 
+        >>> df.rename(new_x = 'x')
+        >>> df.rename('new_x', 'x')
         """
-        assert isinstance(columns, dict) or columns is None,\
-            "'columns' must be a dictionary or None."
+        columns = None
+        if len(args) == 1 and isinstance(args[0], dict):
+            columns = args[0]
+        elif len(args) >= 2 and all(isinstance(a, str) for a in args):
+            # dplyr-style positional: new_name, old_name, new_name, old_name, ...
+            columns = {args[i+1]: args[i] for i in range(0, len(args), 2)}
+        elif len(args) == 0:
+            pass
+        else:
+            raise ValueError("'columns' must be a dictionary, paired strings, or keyword arguments.")
+
+        # Handle kwargs: new_name='old_name'
+        if kwargs:
+            kw_columns = {v: k for k, v in kwargs.items()}
+            if columns is None:
+                columns = kw_columns
+            else:
+                columns.update(kw_columns)
 
         if columns is not None:
             if regex:
@@ -2037,7 +2061,7 @@ class tibble(pl.DataFrame):
         *args and **kws are arguments used in underlying method used
         to save the file, which is based on the file extension.
 
-        * .tex => tidypolars4sci.tibble.to_latex
+        * .tex => tidypolars_extra.tibble.to_latex
 
         * .csv => polars.write_csv   (uses sep=';' as default)
         * .tsv => polars.write_csv   (uses sep='\t' as default)

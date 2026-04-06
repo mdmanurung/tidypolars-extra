@@ -24,7 +24,7 @@ It also supports files with:
     [here](#files-with-hierarchical-headings).
 -   Labeled data. See the examples [here](#files-with-labels).
 
-The function `read_data()` will return a tidypolars$^{4sci}$ `tibble`
+The function `read_data()` will return a tidypolars-extra `tibble`
 or, if the file contains labeled data, a tuple (`tibble`,
 `DATA_LABELS`).
 
@@ -37,7 +37,7 @@ Here is the file used in this example:
 use:
 
 ``` {.python exports="both" results="output code" tangle="src-read-write.py" cache="yes" noweb="no" session="*Python*" title="Loading data" linenums="1"}
-import tidypolars4sci as tp
+import tidypolars_extra as tp
 
 fn = "example.csv"     # change the file path to where your saved the file
 df = tp.read_data(fn=fn)
@@ -285,7 +285,7 @@ shape: (2, 7)
 To lead data from a URL pointing to the data file, use:
 
 ``` {.python exports="both" results="output code" tangle="src-read.py" cache="yes" noweb="no" session="*Python*" linenums="1" eval="always"}
-fn = 'https://diogoferrari.com/tidypolars4sci/src/data/example.csv'
+fn = 'https://diogoferrari.com/tidypolars_extra/src/data/example.csv'
 df = tp.read_data(fn=fn)
 df.head().print()
 ```

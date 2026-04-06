@@ -7,8 +7,9 @@ from .utils import (
 __all__ = [
     # Agg stats
     "abs", "cor", "cov", "count", "first", "last", "length",
+    "log", "log10",
     "max", "mean", "median", "min", "n",
-     "quantile", "sd", "sum", "var", "rank",
+     "quantile", "sd", "sqrt", "sum", "var", "rank",
     "floor", 'scale'
 ]
 
@@ -48,7 +49,7 @@ def cor(x, y, method = 'pearson'):
     >>> df.summarize(cor = tp.cor(col('x'), col('y')))
     """
     if pl.Series([method]).is_in(['pearson', 'spearman']).not_().item():
-        ValueError("`method` must be either 'pearson' or 'spearman'")
+        raise ValueError("`method` must be either 'pearson' or 'spearman'")
     return pl.corr(x, y, method = method)
 
 def cov(x, y):

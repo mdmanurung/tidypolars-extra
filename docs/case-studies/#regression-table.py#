@@ -53,7 +53,7 @@ def sythetic_data(seed, n=2000):
 
     return data
 
-import tidypolars4sci as tp
+import tidypolars_extra as tp
 import numpy as np
 # 
 from statsmodels.formula.api import ols as lm

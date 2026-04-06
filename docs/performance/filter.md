@@ -26,7 +26,7 @@ df_polars = df_tp.to_polars()
 # collect processing time
 processing_time = {'pandas': [],
                    'polars': [],
-                   'tidypolars4sci': [],
+                   'tidypolars_extra': [],
                    }
 
 # pandas 
@@ -48,7 +48,7 @@ for _ in range(m):
 for _ in range(m):
     start_time = time.time()
     df_tp.filter((tp.col('a')=='apple') | (tp.col('a')=='banana'))
-    processing_time['tidypolars4sci'] += [time.time() - start_time]
+    processing_time['tidypolars_extra'] += [time.time() - start_time]
 
 ```
 
@@ -61,7 +61,7 @@ shape: (3, 6)
 │ str               f64    f64    f64    f64   str                          │
 ╞═══════════════════════════════════════════════════════════════════════════╡
 │ polars           0.01   0.00   0.01   0.01   1.0x (baseline)              │
-│ tidypolars4sci   0.01   0.00   0.01   0.02   0.9x                         │
+│ tidypolars_extra   0.01   0.00   0.01   0.02   0.9x                         │
 │ pandas           0.09   0.00   0.09   0.12   7.4x                         │
 └───────────────────────────────────────────────────────────────────────────┘
 ```

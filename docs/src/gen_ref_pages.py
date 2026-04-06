@@ -230,7 +230,7 @@ def _write_doc_page(
 
 # change these files
 nav = mkdocs_gen_files.Nav()
-MODULE_NAME = "tidypolars4sci"
+MODULE_NAME = "tidypolars_extra"
 root = Path(__file__).parent.parent.parent
 src = root / MODULE_NAME 
 api_docs_dir = root / "docs" / "api"

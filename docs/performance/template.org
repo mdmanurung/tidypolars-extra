@@ -9,7 +9,7 @@
 from docs.src.config import *
 from docs.src.performance import *
 # 
-import tidypolars4sci as tp
+import tidypolars_extra as tp
 import time
 
 #+END_SRC
@@ -29,7 +29,7 @@ def on_pandas(df):
 def on_polars(df):
     pass
 
-def on_tidypolars4sci(df):
+def on_tidypolars_extra(df):
     pass
 
     
@@ -39,7 +39,7 @@ m = 1_000      # repetitions
 # collect processing time
 processing_time = {'pandas': [],
                    'polars': [],
-                   'tidypolars4sci': [],
+                   'tidypolars_extra': [],
                    }
 # 
 for i in range(m):
@@ -54,8 +54,8 @@ for i in range(m):
     processing_time['polars'] += [time.time() - start_time]
     
     start_time = time.time()
-    on_tidypolars4sci(mtcars)
-    processing_time['tidypolars4sci'] += [time.time() - start_time]
+    on_tidypolars_extra(mtcars)
+    processing_time['tidypolars_extra'] += [time.time() - start_time]
 
 #+END_SRC
 

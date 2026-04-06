@@ -1,12 +1,12 @@
 
-You can install tidypolars4sci with `pip`{.verbatim}:
+You can install tidypolars_extra with `pip`{.verbatim}:
 
 ``` {.bash org-language="sh"}
-$ pip install tidypolars4sci
+$ pip install tidypolars_extra
 ```
 
 Or through `conda`{.verbatim}:
 
 ``` {.bash org-language="sh"}
-$ conda install -c conda-forge tidypolars4sci
+$ conda install -c conda-forge tidypolars_extra
 ```

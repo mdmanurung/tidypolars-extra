@@ -6,8 +6,8 @@ Let us use the data set `mtcars` to create a table in wide format using
 `pivot_wide`. Here are the variables
 
 ``` {.python exports="both" results="output code" tangle="performance.py" cache="yes" noweb="no" session="*Python-Org*"}
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars
 
 mtcars.glimpse()
 ```
@@ -35,7 +35,7 @@ carb <int64>     6    0 0% [4 4 1 1 2 1 4 2 2 4 4 3 3 3 4 4 4 1 2 1 1 2 2 4 2 1 
 A simple pivot wide operation:
 
 ``` {.python exports="both" results="output code" tangle="src-pivot-wide.py" cache="yes" noweb="no" session="*Python-Org*"}
-from tidypolars4sci.data import mtcars
+from tidypolars_extra.data import mtcars
 
 tab = (mtcars
        .select('name', 'am')
@@ -57,7 +57,7 @@ shape: (1, 2)
 ## Comparison
 
 Table below shows summary after 1,000 repetitions comparing the same
-operation in Pandas, Polars, and tidypolars4sci:
+operation in Pandas, Polars, and tidypolars_extra:
 
 ``` python
 shape: (3, 6)

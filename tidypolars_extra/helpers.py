@@ -112,7 +112,7 @@ def matches(match, ignore_case = False):
     Examples
     --------
     >>> df = tp.tibble({'a': range(3), 'add': range(3), 'sub': ['a', 'a', 'b']})
-    >>> df.select(tp.maches('a'))
+    >>> df.select(tp.matches('a'))
     """
     if ignore_case == True:
         out = f"^(?i){match}.*$"
@@ -201,7 +201,7 @@ def where(col_type):
 
     Examples
     --------
-    >>> from tidypolars4sci.data import mtcars
+    >>> from tidypolars_extra.data import mtcars
     >>> df = mtcars
     >>> df.select(tp.where("integer"))
     >>> df.select(tp.where("numeric"))

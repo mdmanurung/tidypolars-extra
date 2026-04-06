@@ -3,10 +3,10 @@
 :PROPERTIES:
 :CUSTOM_ID: installation
 :END:
-You can install tidypolars4sci with =pip=:
+You can install tidypolars_extra with =pip=:
 
 #+begin_src sh
-$ pip3 install tidypolars4sci
+$ pip3 install tidypolars_extra
 #+end_src
 
 #+RESULTS:
@@ -14,7 +14,7 @@ $ pip3 install tidypolars4sci
 Or through =conda=:
 
 #+begin_src sh
-$ conda install -c conda-forge tidypolars4sci
+$ conda install -c conda-forge tidypolars_extra
 #+end_src
 
 #+RESULTS:

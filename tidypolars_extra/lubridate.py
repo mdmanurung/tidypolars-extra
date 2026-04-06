@@ -36,7 +36,7 @@ def as_date(x, fmt = None):
     >>> df.mutate(date_x = tp.as_date(col('x')))
     """
     x = _col_expr(x)
-    return x.str.strptime(pl.Date, fmt = fmt)
+    return x.str.strptime(pl.Date, format = fmt)
 
 def as_datetime(x, fmt = None):
     """
@@ -55,7 +55,7 @@ def as_datetime(x, fmt = None):
     >>> df.mutate(date_x = tp.as_datetime(col('x')))
     """
     x = _col_expr(x)
-    return x.str.strptime(pl.Datetime, fmt = fmt)
+    return x.str.strptime(pl.Datetime, format = fmt)
 
 def hour(x):
     """
@@ -179,7 +179,7 @@ def quarter(x):
     >>> df.mutate(quarter = tp.quarter(col('x')))
     """
     x = _col_expr(x)
-    return (x.dt.month() // 4) + 1
+    return ((x.dt.month() - 1) // 3) + 1
 
 def dt_round(x, rule, n):
     """
@@ -206,7 +206,7 @@ def dt_round(x, rule, n):
     >>> df.mutate(monthday = tp.mday(col('x')))
     """
     x = _col_expr(x)
-    return x.dt.round()
+    return x.dt.round(f"{n}{rule}")
 
 def second(x):
     """

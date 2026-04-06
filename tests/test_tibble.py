@@ -1,7 +1,7 @@
-import tidypolars as tp
-from tidypolars import col
+import tidypolars_extra as tp
+from tidypolars_extra import col
 import polars as pl
-from tidypolars.utils import _repeat
+from tidypolars_extra.utils import _repeat
 
 def test_arrange1():
     """Can arrange ascending"""

@@ -4,8 +4,8 @@ Let us use the data set `mtcars` to create a table in wide format using
 `pivot_wide`. Here are the variables
 
 ``` {.python exports="both" results="output code" tangle="performance.py" cache="yes" noweb="no" session="*Python-Org*"}
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars
 
 mtcars.glimpse()
 ```
@@ -33,7 +33,7 @@ carb <int64>     6    0 0% [4 4 1 1 2 1 4 2 2 4 4 3 3 3 4 4 4 1 2 1 1 2 2 4 2 1 
 A simple pivot wide operation:
 
 ``` {.python exports="both" results="output code" tangle="pivot-wide.py" cache="yes" noweb="no" session="*Python-Org*"}
-from tidypolars4sci.data import mtcars
+from tidypolars_extra.data import mtcars
 
 tab = (mtcars
        .select('name', 'am')
@@ -53,7 +53,7 @@ shape: (1, 2)
 ```
 
 Table below shows summary after 1,000 repetitions comparing the same
-operation in Pandas, Polars, and tidypolars4sci:
+operation in Pandas, Polars, and tidypolars_extra:
 
 ``` python
 shape: (3, 6)
@@ -62,7 +62,7 @@ shape: (3, 6)
 │ str                     f64        f64         f64         f64   str                          │
 ╞═══════════════════════════════════════════════════════════════════════════════════════════════╡
 │ Polars              0.00042    0.00010     0.00026     0.00099   1.0x (baseline)              │
-│ TidyPolars4sci      0.00079    0.00022     0.00049     0.00199   1.9x                         │
+│ TidyPolars Extra      0.00079    0.00022     0.00049     0.00199   1.9x                         │
 │ Pandas              0.00227    0.00065     0.00147     0.00544   5.4x                         │
 └───────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -73,7 +73,7 @@ Here is the summary of the performance:
 
 ## Sintax comparison
 
-=== "tidypolars4sci"
+=== "tidypolars_extra"
     ```python
     tab = (df
            .select(col, 'am')

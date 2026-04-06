@@ -11,7 +11,11 @@ from .utils import (
     _str_to_lit
     )
 
-__all__ = ["case_when", "n_distinct", 'map', 'round']
+__all__ = [
+    "between", "case_when", "coalesce", "if_else",
+    "is_finite", "is_in", "is_infinite", "is_not", "is_not_in", "is_not_null", "is_null",
+    "lead", "map", "n_distinct", "rep", "replace_null", "round", "row_number",
+]
 
 def between(x, left, right):
     """
@@ -33,6 +37,121 @@ def between(x, left, right):
     """
     x = _col_expr(x)
     return x.is_between(left, right)
+
+def is_finite(x):
+    """
+    Test if values are finite
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(finite = tp.is_finite('x'))
+    """
+    x = _col_expr(x)
+    return x.is_finite()
+
+def is_in(x, values):
+    """
+    Test if values are in a list
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+    values : list
+        List of values to check
+
+    Examples
+    --------
+    >>> df.mutate(in_list = tp.is_in('x', [1, 2]))
+    """
+    x = _col_expr(x)
+    return x.is_in(values)
+
+def is_infinite(x):
+    """
+    Test if values are infinite
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(infinite = tp.is_infinite('x'))
+    """
+    x = _col_expr(x)
+    return x.is_infinite()
+
+def is_not(x):
+    """
+    Negate a boolean expression
+
+    Parameters
+    ----------
+    x : Expr
+        Boolean expression to negate
+
+    Examples
+    --------
+    >>> df.mutate(not_finite = tp.is_not(tp.is_finite(col('x'))))
+    """
+    return ~x
+
+def is_not_in(x, values):
+    """
+    Test if values are not in a list
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+    values : list
+        List of values to check
+
+    Examples
+    --------
+    >>> df.mutate(not_in = tp.is_not_in('x', [1, 2]))
+    """
+    x = _col_expr(x)
+    return ~x.is_in(values)
+
+def is_not_null(x):
+    """
+    Test if values are not null
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(not_null = tp.is_not_null('x'))
+    """
+    x = _col_expr(x)
+    return x.is_not_null()
+
+def is_null(x):
+    """
+    Test if values are null
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(null = tp.is_null('x'))
+    """
+    x = _col_expr(x)
+    return x.is_null()
 
 def coalesce(*args):
     """
@@ -137,12 +256,13 @@ def rep(x, times = 1):
         out = x.to_list()
     elif _is_list(x):
         out = x
-    elif isinstance(x, tibble):
+    elif isinstance(x, pl.DataFrame):
+        from .tibble_df import from_polars
         out = pl.concat([x for i in range(times)]).pipe(from_polars)
     elif _is_iterable(x):
         out = list(x)
     else:
-        ValueError("Incompatible type")
+        raise ValueError("Incompatible type")
     if _is_list(out):
         out = pl.Series(out * times)
     return out
@@ -166,7 +286,7 @@ def replace_null(x, replace = None):
 
 def round(x, digits = 0):
     """
-    Get column standard deviation
+    Round a column to the specified number of decimal places
 
     Parameters
     ----------
@@ -198,18 +318,31 @@ def case_when(*args, _default = None):
 
     Parameters
     ----------
-    expr : Expr
-        A logical expression
+    *args : Expr
+        When called with a single expression, returns pl.when() for chaining
+        (e.g., tp.case_when(cond).then(val).otherwise(val)).
+        When called with paired args (condition, value, condition, value, ...),
+        builds the full case expression.
+
+    _default : optional
+        Default value when no condition is met (used with paired args)
 
     Examples
     --------
     >>> df = tp.tibble(x = range(1, 4))
+    >>> # Chaining style
+    >>> df.mutate(case_x = tp.case_when(col('x') < 2).then(0)
+    ...                     .when(col('x') < 3).then(1)
+    ...                     .otherwise(0))
+    >>> # Paired args style
     >>> df.mutate(
-    >>>    case_x = tp.case_when(tp.col('x') < 2, 1,
-    >>>                          tp.col('x') < 3, 2,
+    >>>    case_x = tp.case_when(col('x') < 2, 1,
+    >>>                          col('x') < 3, 2,
     >>>                          _default = 0)
     >>> )
     """
+    if len(args) == 1:
+        return pl.when(args[0])
     conditions = [args[i] for i in range(0, len(args), 2)]
     values = [args[i] for i in range(1, len(args), 2)]
     values = [_str_to_lit(value) for value in values]
