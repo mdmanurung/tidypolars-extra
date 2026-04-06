@@ -1,7 +1,6 @@
 import inspect
 import polars as pl
 import polars.selectors as cs
-from operator import not_
 from itertools import chain
 from pathlib import Path
 from typing import Union
@@ -25,7 +24,7 @@ def _as_list(x):
     elif _is_tuple(x):
         # Helpful to convert args to a list
         out = [val.to_list() if _is_series(val) else val for val in x]
-        out = _list_flatten(x)
+        out = _list_flatten(out)
     elif _is_list(x):
         out = _list_flatten(x)
     else:
@@ -43,7 +42,7 @@ def _safe_len(x):
         return len(x)
 
 def _uses_by(by):
-    if _is_expr(by) | _is_string(by):
+    if _is_expr(by) or _is_string(by):
         return True
     elif isinstance(by, list):
         # Allow passing an empty list to `by`
@@ -58,7 +57,7 @@ def _is_boolean(x):
     return isinstance(x, bool)
 
 def _is_constant(x):
-    return _is_boolean(x) | _is_float(x) | _is_integer(x) | _is_string(x)
+    return _is_boolean(x) or _is_float(x) or _is_integer(x) or _is_string(x)
 
 def _is_expr(x):
     return isinstance(x, pl.Expr)
@@ -70,7 +69,7 @@ def _is_integer(x):
     return isinstance(x, int)
 
 def _is_iterable(x):
-    return hasattr(x, '__iter__') & not_(_is_string(x))
+    return hasattr(x, '__iter__') and not _is_string(x)
 
 def _is_list(x):
     return isinstance(x, list)
@@ -88,27 +87,27 @@ def _is_type(x):
     return type(x).__name__ == 'DataTypeClass'
 
 def _lit_expr(x):
-    if not_(_is_expr(x)):
+    if not _is_expr(x):
         x = pl.lit(x)
     return x
 
 #  Wrap all str inputs in col()  
 def _col_exprs(x):
-    if _is_list(x) | _is_series(x):
+    if _is_list(x) or _is_series(x):
         return [_col_expr(val) for val in x]
     else:
         return [_col_expr(x)]
 
 def _col_expr(x):
-    if _is_expr(x) | _is_series(x) | cs.is_selector(x):
+    if _is_expr(x) or _is_series(x) or cs.is_selector(x):
         return x
-    elif _is_string(x) | _is_type(x):
+    elif _is_string(x) or _is_type(x):
         return pl.col(x)
     else:
        raise ValueError("Invalid input for column selection") 
 
 def _repeat(x, times):
-    if not_(_is_list(x)):
+    if not _is_list(x):
         x = [x]
     return x * times
 

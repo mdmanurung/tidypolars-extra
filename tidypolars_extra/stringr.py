@@ -161,7 +161,7 @@ def str_length(string):
     >>> df.mutate(x = str_length(col('name')))
     """
     string = _col_expr(string)
-    return string.str.len_bytes()
+    return string.str.len_chars()
 
 def str_starts(string, pattern, negate = False):
     """
