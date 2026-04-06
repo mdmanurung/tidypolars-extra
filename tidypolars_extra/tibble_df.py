@@ -1520,7 +1520,7 @@ class tibble(pl.DataFrame):
             missings_perc = str(int(100*missings/self.nrow))+"%"
             # 
             vals = str(df[col].values)
-            vals = vals[:length_head] + (vals[length_head+1:], '...')[len(vals) > length_head]
+            vals = vals[:length_head] + (vals[length_head+1:], '...')[bool(len(vals) > length_head)]
             # 
             print(f"{col:>{length_col}.{length_col}s} "+
                   f"{'<'+dtype+'>':{length_type}.{length_type}s}"+
@@ -2796,7 +2796,7 @@ class TibbleGroupBy(pl.dataframe.group_by.GroupBy):
 
     def __init__(self, df, by, *args, **kwargs):
         assert isinstance(by, str) or isinstance(by, list), "Use list or string to group by."
-        super().__init__(df, by, *args, **kwargs)
+        super().__init__(df, by, *args, predicates=kwargs.pop('predicates', None), **kwargs)
         self.df = df
         self.by = by if isinstance(by, list) else [by]
 
