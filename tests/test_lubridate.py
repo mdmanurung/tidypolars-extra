@@ -1,5 +1,5 @@
-import tidypolars as tp
-from tidypolars import col
+import tidypolars_extra as tp
+from tidypolars_extra import col
 
 def test_date():
     """Can do date operations"""
@@ -20,7 +20,7 @@ def test_date():
         .mutate(date = col('x').str.strptime(tp.Date))
         .mutate(date_check = col('date'),
                 mday = col('date').dt.day(),
-                quarter = tp.Series([1, 3]),
+                quarter = ((col('date').dt.month() - 1) // 3) + 1,
                 wday = col('date').dt.weekday() + 1,
                 week = col('date').dt.week(),
                 yday = col('date').dt.ordinal_day(),
@@ -33,9 +33,9 @@ def test_as_date_fmt():
     """Can pass fmt to as_date"""
     df = tp.tibble(date = ['12/31/2021'])
     out = df.mutate(date_parsed = tp.as_date(col('date'), fmt='%m/%d/%Y'))
-    assert out.pull().is_datelike(), "as_date fmt failed"
+    assert out.pull().dtype.is_temporal(), "as_date fmt failed"
 
 def test_make_date():
     df = tp.tibble(date = ['2021-12-1']).mutate(date = tp.as_date('date'))
     out = df.mutate(date = tp.make_date(2021, 12, 1))
-    assert df.pull('date').series_equal(out.pull('date')), "make_date failed"
+    assert df.pull('date').equals(out.pull('date')), "make_date failed"

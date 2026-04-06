@@ -1,5 +1,5 @@
-import tidypolars as tp
-from tidypolars import col
+import tidypolars_extra as tp
+from tidypolars_extra import col
 
 def test_paste():
     """Can use paste"""

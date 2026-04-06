@@ -1,13 +1,14 @@
 try:
-    from importlib.metadata import version
-    __version__ = version("tidypolars_extra")
-except:
+    from importlib.metadata import version, PackageNotFoundError
+    __version__ = version("tidypolars-extra")
+except (ImportError, PackageNotFoundError):
     __version__ = ""
 
 
 from .io import *
 from .funs import *
 from .helpers import *
+from .lubridate import *
 from .reexports import *
 from .stringr import *
 from .stats import *

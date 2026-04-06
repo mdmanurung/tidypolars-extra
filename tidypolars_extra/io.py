@@ -11,9 +11,6 @@ from dataclasses import dataclass
 from typing import Callable, List
 from typing import Callable, List, Any
 from typing import Dict, Optional, Tuple
-# google spreadsheet
-import gspread
-from google.oauth2.service_account import Credentials
 
 __all__ = [
     "read_data",
@@ -205,10 +202,10 @@ class read_data():
 
         assert fn or url, "Either fn or url must be provided."
 
-        if not bool(re.search(pattern="^http", string=fn)):
+        if fn and not bool(re.search(pattern="^http", string=fn)):
             assert os.path.isfile(fn), f"File {fn} not found."
 
-        fn_base = os.path.basename(fn)
+        fn_base = os.path.basename(fn) if fn else None
         fn_type = os.path.splitext(fn)[1] if fn else None
          
         ACCEPTED_FILES = self.get_accepted_file_formats()
@@ -337,6 +334,9 @@ class read_data():
         return df, labels
 
     def read_gspread(**kws):
+        import gspread
+        from google.oauth2.service_account import Credentials
+
         assert kws.get("credentials", None),"A json file with google spreadsheet API"+\
             "credentials must be provided."
         assert kws.get("url", None),"The google spreadsheet URL must be provided."
@@ -540,7 +540,7 @@ class read_data():
 
 class read_dask:
          
-   def __new__():
+   def __new__(cls):
         print("To be implemented.")
         #     # return eDask(fn, **kws)
         #     return ddf.read_csv(fn, **kws)

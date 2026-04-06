@@ -112,7 +112,7 @@ def matches(match, ignore_case = False):
     Examples
     --------
     >>> df = tp.tibble({'a': range(3), 'add': range(3), 'sub': ['a', 'a', 'b']})
-    >>> df.select(tp.maches('a'))
+    >>> df.select(tp.matches('a'))
     """
     if ignore_case == True:
         out = f"^(?i){match}.*$"
