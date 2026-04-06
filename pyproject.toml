@@ -42,7 +42,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/mdmanurung/tidypolars-extra"
-Documentation = "https://github.com/mdmanurung/tidypolars-extra"
+Documentation = "https://mdmanurung.github.io/tidypolars-extra/"
 Changelog = "https://github.com/mdmanurung/tidypolars-extra/blob/master/CHANGELOG.md"
 Issues = "https://github.com/mdmanurung/tidypolars-extra/issues/"
 
