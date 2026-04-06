@@ -68,7 +68,7 @@ def hour(x):
 
     Examples
     --------
-    >>> df.mutate(hour = tp.as_hour(col('x')))
+    >>> df.mutate(hour = tp.hour(col('x')))
     """
     x = _col_expr(x)
     return x.dt.hour()

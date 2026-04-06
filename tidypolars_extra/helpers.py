@@ -1,17 +1,10 @@
 import polars as pl
 import polars.selectors as cs
 import copy
-import re
 from .utils import (
     _as_list,
     _col_expr,
     _col_exprs,
-    _is_constant,
-    _is_list,
-    _is_iterable,
-    _is_series,
-    _is_string,
-    _str_to_lit
     )
 
 

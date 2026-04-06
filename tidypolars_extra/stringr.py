@@ -61,7 +61,9 @@ def paste0(*args):
 
 def str_c(*args, sep = ''):
     """
-    Concatenate strings together
+    Concatenate strings together.
+
+    Alias for :func:`paste`.
 
     Parameters
     ----------
