@@ -36,7 +36,7 @@ def _kwargs_as_exprs(kwargs):
     return [_lit_expr(expr).alias(key) for key, expr in kwargs.items()]
 
 def _safe_len(x):
-    if x == None:
+    if x is None:
         return 0
     else:
         return len(x)

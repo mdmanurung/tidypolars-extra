@@ -89,3 +89,4 @@ ignore = [
 "__init__.py" = ["F403"]  # wildcard imports are intentional
 "tibble_df.py" = ["F403", "F405"]  # wildcard imports from reexports/stats/type_conversion
 "reexports.py" = ["F401"]  # re-exports are intentional
+"tests/*" = ["E721"]  # type() comparisons are used in existing tests
