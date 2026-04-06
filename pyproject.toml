@@ -31,11 +31,12 @@ dependencies = [
   "pandas",
   "polars>=1.0",
   "pyarrow",
-  "pyreadr",
-  "pyreadstat",
 ]
 
 [project.optional-dependencies]
+sav = [
+  "pyreadstat",
+]
 dev = [
   "pytest>=7.0",
 ]

@@ -919,7 +919,7 @@ class tibble(pl.DataFrame):
             if cols:
                 replace_dict = {col:replace for col in cols}
 
-        elif isinstance(replace, float | int):
+        elif isinstance(replace, (float, int)):
             cols = self.select(where("numeric")).names
             if cols:
                 replace_dict = {col:replace for col in cols}
@@ -2123,7 +2123,8 @@ class tibble(pl.DataFrame):
 
 
         home_dir = os.path.expanduser("~")
-        print(f"Save at: {"~"+folder.replace(home_dir, '')}") if not silently else None
+        path_display = "~" + folder.replace(home_dir, '')
+        print(f"Save at: {path_display}") if not silently else None
         
     def to_excel(self, *args, **kws):
         """
