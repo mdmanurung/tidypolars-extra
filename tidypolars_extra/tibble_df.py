@@ -1510,8 +1510,7 @@ class tibble(pl.DataFrame):
                   f"{header_missing_perc:>{length_missing_perc}s} "+
                   f"{header_head:{length_head}s}")
         print(header)
-        hline = "-"*size_col
-        # print(hline)
+        # print("-"*size_col)
         for col in df.columns:
             dtype = str(df[col].dtype)
             nvalues = len(df[col].unique())
@@ -2346,7 +2345,7 @@ class tibble(pl.DataFrame):
         # add centering
         row = [i for i, txt in enumerate(rows) if
                bool(re.search(pattern='begin.*tabular', string=txt))][0]
-        rows.insert(row,f"\\centering")
+        rows.insert(row,"\\centering")
 
         footnotes_formated = ""
         if footnotes is not None:
@@ -2555,7 +2554,7 @@ class tibble(pl.DataFrame):
 
         longtable_begin = f'\\begin{{longtable}}{{{align}}}\n\n\\caption[]{{{caption}}}\\\\'
           
-        longtable_end   = f'% ----------------- BODY ends -----------------\n\\end{{longtable}}'
+        longtable_end   = '% ----------------- BODY ends -----------------\n\\end{longtable}'
         if longtable_singlespace:
             longtable_begin = '\\begin{spacing}{1}\n' + longtable_begin 
             longtable_end   =  longtable_end + "\n\\end{spacing}"

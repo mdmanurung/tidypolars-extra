@@ -32,3 +32,6 @@ jobs:
 
       - name: Run tests
         run: python -m pytest tests/ -v
+
+      - name: Run linter
+        run: ruff check tidypolars_extra/
