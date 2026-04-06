@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .tibble_df import from_pandas, from_polars
 from .utils import _filter_kwargs_for, _expand_to_full_path_or_url
 # 
@@ -5,8 +7,6 @@ import polars as pl
 import copy
 import re, os
 import pandas as pd
-import pyreadstat
-# from pyreadr import read_r
 from dataclasses import dataclass
 from typing import Callable, List
 from typing import Callable, List, Any
@@ -304,6 +304,13 @@ class read_data():
         return df, labels
 
     def read_sav(**kws):
+        try:
+            import pyreadstat
+        except ImportError:
+            raise ImportError(
+                "pyreadstat is required to read .sav files. "
+                "Install it with: pip install pyreadstat"
+            )
         reader = pyreadstat.read_sav
         kws_reader = _filter_kwargs_for(reader, kws)
 
