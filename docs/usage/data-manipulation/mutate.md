@@ -3,7 +3,7 @@
 To create new variables based on the transformation of existing ones:
 
 ``` {.python exports="code" results="none" tangle="02-mutate.py" cache="yes" noweb="no" session="*Python*" linenums="1"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import starwars
 
 df = (starwars
@@ -66,7 +66,7 @@ The module provides many other default functions to apply to columns.
 Check the API reference for more. Here are some other examples.
 
 ``` {.python exports="both" results="output code" tangle="src-default-functions.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python*" linenums="1"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars as df
 
 

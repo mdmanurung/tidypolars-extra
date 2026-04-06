@@ -2,7 +2,7 @@ tidypolars$^{4sci} $ methods are designed to work like tidyverse
 functions. This creates a dataframe:
 
 ``` {.python exports="code" results="none" tangle="src-usage.py" cache="yes" noweb="no" session="*Python*" linenums="1"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 
 df = tp.tibble({"x" : range(6),
                 "y" : range(6, 12),

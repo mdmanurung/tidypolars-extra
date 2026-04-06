@@ -4,7 +4,7 @@ Let us use the data set `mtcars` to create a table in wide format using
 `pivot_wide`. Here are the variables
 
 ``` {.python exports="both" results="output code" tangle="performance.py" cache="yes" noweb="no" session="*Python-Org*"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars
 
 mtcars.glimpse()

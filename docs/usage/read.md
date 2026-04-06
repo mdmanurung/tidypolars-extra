@@ -37,7 +37,7 @@ Here is the file used in this example:
 use:
 
 ``` {.python exports="both" results="output code" tangle="src-read-write.py" cache="yes" noweb="no" session="*Python*" title="Loading data" linenums="1"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 
 fn = "example.csv"     # change the file path to where your saved the file
 df = tp.read_data(fn=fn)

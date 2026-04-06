@@ -9,7 +9,7 @@
 from docs.src.config import *
 from docs.src.performance import *
 # 
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 import time
 from numpy.random import uniform as runif
 from numpy.random import normal as rnorm

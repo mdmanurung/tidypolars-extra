@@ -1,6 +1,6 @@
 from docs.src.config import *
 
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 import tools4sci as t4
 from tidypolars4sci.data import vote as df
 # 

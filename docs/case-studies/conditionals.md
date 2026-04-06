@@ -6,7 +6,7 @@ inspired by dplyr: `case_match`, `na_if`, `consecutive_id`, `if_all`, and `if_an
 ## Setup
 
 ``` {.python exports="both" results="output code" tangle="src-conditionals.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python-Org*"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars as df
 import polars as pl
 ```

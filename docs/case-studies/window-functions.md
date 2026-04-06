@@ -7,7 +7,7 @@ analogous to dplyr: `dense_rank`, `min_rank`, `percent_rank`, `cume_dist`,
 ## Setup
 
 ``` {.python exports="both" results="output code" tangle="src-window.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python-Org*"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars as df
 import polars as pl
 

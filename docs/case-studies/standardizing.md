@@ -4,7 +4,7 @@ It is easy to standardize the value of many varibles at once, or create
 new variables standardized. Consider these variables:
 
 ``` {.python exports="both" results="output code" tangle="src-mutate.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python-Org*"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import starwars as df
 
 # let us select 3 variables and the first 10 rows only for the example

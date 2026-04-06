@@ -2,7 +2,7 @@
 ** Preamble :noexport:
 
 #+BEGIN_SRC python :exports none :results none :tangle performance.py :cache yes :noweb no :session *Python-Org*
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -109,7 +109,7 @@ def pivot_wide_with_tidypolars4sci(df):
 Let us use the data set ~mtcars~ to create a table in wide format using ~pivot_wide~. Here are the variables
 
 #+BEGIN_SRC python :exports both :results output code :tangle performance.py :cache yes :noweb no :session *Python-Org*
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars
 
 mtcars.glimpse()

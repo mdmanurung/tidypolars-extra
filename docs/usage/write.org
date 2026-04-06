@@ -17,7 +17,7 @@ To write the tibble to a file, use ~save_data()~. The type to be used is inferre
 
 # 
 #+BEGIN_SRC python :exports results :results output code org :tangle src-write.py :cache yes :noweb no :session *Python* :linenums 1 :eval always
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 tp.tibble_df.__get_accepted_output_formats__(True)
 #+END_SRC
 
@@ -37,7 +37,7 @@ tp.tibble_df.__get_accepted_output_formats__(True)
 Here is an example of how to save a ~tibble~ to ~.csv~. We can use the mtcars data provided with tidypolars\(^{4sci} \) to illustrate the procedure:
 
 #+BEGIN_SRC python :exports both :results output code :tangle src-write.py :cache yes :noweb no :session *Python* :linenums 1 :eval always
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars as df
 
 df.head().print()
@@ -84,7 +84,7 @@ It is possible to save copies in other formats without calling the function mult
 
 # 
 #+BEGIN_SRC python :exports both :results output code :tangle src-write.py :cache yes :noweb no :session *Python* :linenums 1 :eval always
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars as df
 
 # save data to csv

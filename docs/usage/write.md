@@ -22,7 +22,7 @@ mtcars data provided with tidypolars$^{4sci} $ to illustrate the
 procedure:
 
 ``` {.python exports="both" results="output code" tangle="src-write.py" cache="yes" noweb="no" session="*Python*" linenums="1" eval="always"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars as df
 
 df.head().print()
@@ -64,7 +64,7 @@ function multiple times using the argument `copies`. For instance, to
 save a `.csv` file, a copy in `.xlsx`, and another in `.dta`, use:
 
 ``` {.python exports="both" results="output code" tangle="src-write.py" cache="yes" noweb="no" session="*Python*" linenums="1" eval="always"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars as df
 
 # save data to csv

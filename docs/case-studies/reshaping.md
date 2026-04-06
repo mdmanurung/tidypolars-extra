@@ -6,7 +6,7 @@ tidypolars4sci provides several tidyr-inspired functions for reshaping data:
 ## Setup
 
 ``` {.python exports="both" results="output code" tangle="src-reshaping.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python-Org*"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars as df
 import polars as pl
 ```

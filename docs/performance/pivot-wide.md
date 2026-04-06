@@ -9,7 +9,7 @@ Let us use the data set `mtcars` to create a table in wide format using
 from docs.src.config import *
 from docs.src.performance import *
 # 
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 from tidypolars4sci.data import mtcars
 import time
 

@@ -19,7 +19,7 @@ The synthetic data `vote` contains information about Democratic and
 Republican voters, including demographics and voting behavior:
 
 ``` {.python exports="both" results="output code" tangle="src-regression-table.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python*" title="Loading data and modules" linenums="1"}
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 import tools4sci as t4
 from tidypolars4sci.data import vote as df
 import numpy as np

@@ -1,4 +1,4 @@
-import tidypolars4sci as tp
+import tidypolars4sci_ext as tp
 import matplotlib.pyplot as plt
 import seaborn as sns
 import polars as pl
