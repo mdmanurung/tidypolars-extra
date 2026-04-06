@@ -50,9 +50,8 @@ coverage.xml
 *.mo
 *.pot
 
-# Sphinx documentation
+# Documentation build output
 docs/_build/
-docs_sphinx/_build/
 
 # PyBuilder
 target/
