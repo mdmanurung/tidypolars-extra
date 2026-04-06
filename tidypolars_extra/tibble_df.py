@@ -2279,7 +2279,7 @@ class tibble(pl.DataFrame):
             Ignored when ``longtable=True`` (LaTeX limitation because
             longtable does not use tabular).
 
-        parse_linebreaks : book, default=True
+        parse_linebreaks : bool, default=True
             If True, parse \\n and replace it with \\makecel
             to produce linebreaks
 
