@@ -2,80 +2,83 @@ import polars as pl
 from .utils import _col_expr
 
 __all__ = [
-    "fct_reorder",
+    "fct_collapse",
     "fct_infreq",
     "fct_lump",
     "fct_recode",
-    "fct_collapse",
     "fct_rev",
 ]
 
 
-def fct_reorder(x, y, fn='mean'):
-    """
-    Reorder factor levels by a summary statistic of another variable
-
-    Parameters
-    ----------
-    x : Expr, str
-        Factor/categorical column to reorder
-    y : Expr, str
-        Numeric column to summarize for ordering
-    fn : str
-        Summary function: 'mean' (default), 'median', 'min', 'max', 'sum'
-
-    Returns
-    -------
-    Expr
-        Expression that casts x to an Enum with reordered levels.
-
-    Examples
-    --------
-    >>> df.mutate(x_reordered = tp.fct_reorder('x', 'y', fn='mean'))
-    """
-    x = _col_expr(x)
-    y = _col_expr(y)
-    fn_map = {
-        'mean': y.mean(),
-        'median': y.median(),
-        'min': y.min(),
-        'max': y.max(),
-        'sum': y.sum(),
-    }
-    if fn not in fn_map:
-        raise ValueError(f"`fn` must be one of {list(fn_map.keys())}")
-
-    # Return a struct that can be used to reorder
-    # The actual reordering needs to happen at the DataFrame level
-    # So we return a helper expression
-    return x.cast(pl.Utf8).cast(pl.Categorical)
-
-
-def fct_infreq(x):
+def fct_infreq(df, col_name):
     """
     Reorder factor levels by frequency (most common first)
 
     Parameters
     ----------
-    x : Expr, str
-        Factor/categorical column to reorder
+    df : tibble
+        The DataFrame containing the column
+    col_name : str
+        Name of the column to reorder
 
     Returns
     -------
-    Expr
-        Expression that casts x to Categorical (physical ordering by frequency).
+    tibble
+        DataFrame with column cast to Enum with levels ordered by frequency.
 
     Examples
     --------
-    >>> df.mutate(x_ordered = tp.fct_infreq('x'))
+    >>> df = tp.tibble(x=['a', 'b', 'a', 'a', 'b', 'c'])
+    >>> df = tp.fct_infreq(df, 'x')
     """
-    x = _col_expr(x)
-    return x.cast(pl.Utf8).cast(pl.Categorical)
+    counts = (df.to_polars()
+              .get_column(col_name)
+              .cast(pl.Utf8)
+              .value_counts(sort=True))
+    levels = counts.get_column(col_name).to_list()
+    dtype = pl.Enum(levels)
+    return df.mutate(pl.col(col_name).cast(pl.Utf8).cast(dtype).alias(col_name))
+
+
+def fct_rev(df, col_name):
+    """
+    Reverse factor level order
+
+    Parameters
+    ----------
+    df : tibble
+        The DataFrame containing the column
+    col_name : str
+        Name of the column to reverse
+
+    Returns
+    -------
+    tibble
+        DataFrame with column cast to Enum with reversed level order.
+
+    Examples
+    --------
+    >>> df = tp.tibble(x=['a', 'b', 'c'])
+    >>> df = tp.fct_rev(df, 'x')
+    """
+    col_series = df.to_polars().get_column(col_name)
+    dtype = col_series.dtype
+    if isinstance(dtype, pl.Enum):
+        levels = list(reversed(dtype.categories.to_list()))
+    elif dtype == pl.Categorical:
+        levels = list(reversed(col_series.cast(pl.Utf8).unique().sort().to_list()))
+    else:
+        levels = list(reversed(col_series.cast(pl.Utf8).unique().sort().to_list()))
+    new_dtype = pl.Enum(levels)
+    return df.mutate(pl.col(col_name).cast(pl.Utf8).cast(new_dtype).alias(col_name))
 
 
 def fct_lump(x, n=None, prop=None, other_level='Other'):
     """
     Collapse least frequent factor levels into 'Other'
+
+    Uses a ranking approach: for each value, computes its frequency rank
+    and replaces values outside the top n with other_level.
 
     Parameters
     ----------
@@ -84,7 +87,7 @@ def fct_lump(x, n=None, prop=None, other_level='Other'):
     n : int, optional
         Number of most frequent levels to keep
     prop : float, optional
-        Minimum proportion to keep a level
+        Minimum proportion to keep a level (0 to 1)
     other_level : str
         Label for collapsed levels (default: 'Other')
 
@@ -101,18 +104,14 @@ def fct_lump(x, n=None, prop=None, other_level='Other'):
     x_str = x.cast(pl.Utf8)
 
     if n is not None:
-        # Keep top n levels, replace rest with other_level
-        return pl.when(
-            x_str.is_in(x_str.value_counts(sort=True).struct.field(x_str.meta.output_name()).head(n))
-        ).then(x_str).otherwise(pl.lit(other_level))
+        # Rank by frequency; keep levels where rank <= n
+        freq = x_str.len().over(x_str)
+        freq_rank = freq.rank(method='dense', descending=True)
+        return pl.when(freq_rank <= n).then(x_str).otherwise(pl.lit(other_level))
     elif prop is not None:
-        return pl.when(
-            x_str.is_in(
-                x_str.value_counts(sort=True)
-                .filter(pl.col('count') / pl.col('count').sum() >= prop)
-                .struct.field(x_str.meta.output_name())
-            )
-        ).then(x_str).otherwise(pl.lit(other_level))
+        # Keep levels that appear in at least prop fraction of rows
+        freq = x_str.len().over(x_str)
+        return pl.when(freq >= pl.len() * prop).then(x_str).otherwise(pl.lit(other_level))
     else:
         return x_str
 
@@ -174,25 +173,3 @@ def fct_collapse(x, **kwargs):
             old_levels = [old_levels]
         result = pl.when(result.is_in(old_levels)).then(pl.lit(new_level)).otherwise(result)
     return result
-
-
-def fct_rev(x):
-    """
-    Reverse factor level order
-
-    Parameters
-    ----------
-    x : Expr, str
-        Factor/categorical column
-
-    Returns
-    -------
-    Expr
-        Expression with reversed level order (cast to Categorical).
-
-    Examples
-    --------
-    >>> df.mutate(x_rev = tp.fct_rev('x'))
-    """
-    x = _col_expr(x)
-    return x.cast(pl.Utf8).cast(pl.Categorical)

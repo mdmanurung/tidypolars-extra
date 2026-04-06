@@ -436,7 +436,7 @@ def str_pad(string, width, side = 'left', pad = ' '):
         return string.str.pad_start((width + 1) // 2, pad).str.pad_end(width, pad)
     return string
 
-def str_split(string, pattern, n = None):
+def str_split(string, pattern):
     """
     Split a string by a pattern
 
@@ -446,8 +446,6 @@ def str_split(string, pattern, n = None):
         Column to operate on
     pattern : str
         Pattern to split on
-    n : int, optional
-        Maximum number of splits. If None, split all.
 
     Returns
     -------
@@ -459,8 +457,8 @@ def str_split(string, pattern, n = None):
     >>> df.mutate(parts = tp.str_split('x', '_'))
     """
     string = _col_expr(string)
-    if n is not None:
-        return string.str.splitn(pattern, n + 1)
+    # Always use split() which returns a list column
+    # splitn() returns a struct which is less ergonomic
     return string.str.split(pattern)
 
 def str_squish(string):

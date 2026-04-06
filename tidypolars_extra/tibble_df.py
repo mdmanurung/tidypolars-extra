@@ -1883,6 +1883,8 @@ class tibble(pl.DataFrame):
                 row['p75'] = None
                 row['max'] = None
             stats_rows.append(row)
+        if not stats_rows:
+            return tibble()
         return tibble(**{k: [r[k] for r in stats_rows] for k in stats_rows[0]})
 
     def replace_na(self, replace = None):
@@ -2023,8 +2025,9 @@ class tibble(pl.DataFrame):
         header_row = '| ' + ' | '.join(headers) + ' |'
         sep_row = '| ' + ' | '.join(['---'] * len(headers)) + ' |'
         rows = []
-        for i in range(self.nrow):
-            row_vals = [str(self.to_polars().row(i)[j]) for j in range(len(headers))]
+        df_pl = self.to_polars()
+        for row in df_pl.iter_rows():
+            row_vals = [str(v) for v in row]
             rows.append('| ' + ' | '.join(row_vals) + ' |')
         return '\n'.join([header_row, sep_row] + rows)
 

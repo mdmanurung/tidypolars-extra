@@ -408,13 +408,29 @@ class TestForcats:
 
     def test_fct_rev(self):
         df = tp.tibble(x=['a', 'b', 'c'])
-        result = df.mutate(x2=tp.fct_rev('x'))
-        assert result.pull('x2').to_list() == ['a', 'b', 'c']  # values same, type changes
+        result = tp.fct_rev(df, 'x')
+        # Values should be the same
+        assert result.pull('x').to_list() == ['a', 'b', 'c']
+        # But dtype should be Enum with reversed levels
+        assert isinstance(result.to_polars().get_column('x').dtype, pl.Enum)
 
     def test_fct_infreq(self):
         df = tp.tibble(x=['a', 'b', 'a', 'a', 'b', 'c'])
-        result = df.mutate(x2=tp.fct_infreq('x'))
+        result = tp.fct_infreq(df, 'x')
         assert result.nrow == 6
+        # Should be Enum type with 'a' first (most frequent)
+        dtype = result.to_polars().get_column('x').dtype
+        assert isinstance(dtype, pl.Enum)
+        assert dtype.categories.to_list()[0] == 'a'
+
+    def test_fct_lump(self):
+        df = tp.tibble(x=['a', 'a', 'a', 'b', 'b', 'c', 'd', 'e'])
+        result = df.mutate(x2=tp.fct_lump('x', n=2))
+        vals = result.pull('x2').to_list()
+        # 'a' and 'b' are most frequent, rest should be 'Other'
+        assert vals.count('a') == 3
+        assert vals.count('b') == 2
+        assert vals.count('Other') == 3
 
 
 # ============================================================
@@ -475,3 +491,72 @@ class TestMissingFuns:
         df = tp.tibble(x=[1, 2, 3])
         result = df.summarize(m=tp.n_missing('x'))
         assert result.pull('m').item() == 0
+
+
+# ============================================================
+# Edge Case Tests (from audit)
+# ============================================================
+
+class TestEdgeCases:
+    def test_percent_rank_single_row(self):
+        """percent_rank should return 0 for single row (not divide by zero)"""
+        df = tp.tibble(x=[42])
+        result = df.mutate(pr=tp.percent_rank('x'))
+        assert result.pull('pr').to_list() == [0.0]
+
+    def test_ntile_correct_groups(self):
+        """ntile should produce exactly n groups"""
+        df = tp.tibble(x=list(range(1, 11)))
+        result = df.mutate(q=tp.ntile('x', 4))
+        groups = result.pull('q').unique().sort().to_list()
+        assert groups == [1, 2, 3, 4]
+
+    def test_ntile_single_row(self):
+        df = tp.tibble(x=[1])
+        result = df.mutate(q=tp.ntile('x', 3))
+        assert result.pull('q').to_list() == [1]
+
+    def test_describe_empty_columns(self):
+        """describe should handle DataFrame with no columns"""
+        df = tp.tibble(x=[1, 2]).select()
+        result = df.describe()
+        assert result.nrow == 0
+
+    def test_describe_with_dates(self):
+        """describe should handle date columns gracefully"""
+        df = tp.tibble(d=[date(2024, 1, 1), date(2024, 6, 15)])
+        result = df.describe()
+        assert result.nrow == 1
+        assert result.pull('column').to_list() == ['d']
+
+    def test_ceiling_date_on_boundary(self):
+        """ceiling_date with change_on_boundary=False should not bump boundary dates"""
+        df = tp.tibble(d=[date(2024, 3, 1), date(2024, 3, 15)])
+        result = df.mutate(cd=tp.ceiling_date('d', 'month'))
+        vals = result.pull('cd').to_list()
+        assert vals[0] == date(2024, 3, 1)  # Already at boundary, unchanged
+        assert vals[1] == date(2024, 4, 1)  # Bumped to next month
+
+    def test_complete_empty_fill(self):
+        """complete with no fill should leave nulls"""
+        df = tp.tibble(x=[1, 2], y=['a', 'b'], val=[10, 20])
+        result = df.complete('x', 'y')
+        assert result.nrow == 4
+        null_count = result.pull('val').null_count()
+        assert null_count == 2
+
+    def test_semi_join_left_on_right_on(self):
+        """semi_join with left_on/right_on should work"""
+        df1 = tp.tibble(a=[1, 2, 3])
+        df2 = tp.tibble(b=[1, 3])
+        result = df1.semi_join(df2, left_on='a', right_on='b')
+        assert result.nrow == 2
+
+    def test_clean_names_special_chars(self):
+        """clean_names should handle special characters"""
+        df = tp.tibble(**{"col (1)": [1], "col.2": [2], "col  3": [3]})
+        result = df.clean_names()
+        for name in result.names:
+            assert ' ' not in name
+            assert '(' not in name
+            assert ')' not in name

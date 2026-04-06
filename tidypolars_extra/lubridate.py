@@ -396,7 +396,7 @@ def floor_date(x, unit = 'month'):
     x = _col_expr(x)
     return x.dt.truncate(_unit_to_polars(unit))
 
-def ceiling_date(x, unit = 'month'):
+def ceiling_date(x, unit = 'month', change_on_boundary = False):
     """
     Round date up to the nearest unit
 
@@ -406,6 +406,9 @@ def ceiling_date(x, unit = 'month'):
         Date/datetime column
     unit : str
         Unit to round to: 'year', 'month', 'week', 'day', 'hour', 'minute', 'second'
+    change_on_boundary : bool
+        If False (default), dates already at a boundary are unchanged.
+        If True, boundary dates are bumped to the next unit.
 
     Returns
     -------
@@ -418,7 +421,12 @@ def ceiling_date(x, unit = 'month'):
     """
     x = _col_expr(x)
     pl_unit = _unit_to_polars(unit)
-    return x.dt.offset_by(pl_unit).dt.truncate(pl_unit)
+    floored = x.dt.truncate(pl_unit)
+    ceiled = x.dt.offset_by(pl_unit).dt.truncate(pl_unit)
+    if change_on_boundary:
+        return ceiled
+    # If already at boundary, keep as-is
+    return pl.when(x == floored).then(x).otherwise(ceiled)
 
 def days(n = 1):
     """

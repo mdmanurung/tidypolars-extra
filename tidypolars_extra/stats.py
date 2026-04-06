@@ -500,7 +500,9 @@ def percent_rank(x):
     """
     x = _col_expr(x)
     r = x.rank(method='min')
-    return (r - 1) / (pl.len() - 1)
+    denom = pl.len() - 1
+    # When n=1, percent_rank is defined as 0 (matching R behavior)
+    return pl.when(denom == 0).then(0.0).otherwise((r - 1) / denom)
 
 def cume_dist(x):
     """
@@ -536,7 +538,9 @@ def ntile(x, n):
     """
     x = _col_expr(x)
     r = x.rank(method='ordinal')
-    return ((r - 1) * n / pl.len()).cast(pl.Int64) + 1
+    total = pl.len()
+    # floor((rank - 1) * n / total) + 1, matching R's ntile behavior
+    return ((r - 1) * n / total).floor().cast(pl.Int64) + 1
 
 def weighted_mean(x, w):
     """
@@ -561,6 +565,9 @@ def mode(x):
     """
     Compute the statistical mode (most frequent value)
 
+    Returns the first mode if there are ties (non-deterministic for ties).
+    Use in summarize() context.
+
     Parameters
     ----------
     x : Expr, Series
@@ -576,6 +583,8 @@ def mode(x):
 def iqr(x):
     """
     Compute the interquartile range (Q3 - Q1)
+
+    Use in summarize() context only. Not suitable for mutate().
 
     Parameters
     ----------
@@ -593,6 +602,8 @@ def mad(x):
     """
     Compute the median absolute deviation
 
+    Use in summarize() context only. Not suitable for mutate().
+
     Parameters
     ----------
     x : Expr, Series
@@ -600,7 +611,7 @@ def mad(x):
 
     Examples
     --------
-    >>> df.mutate(mad_val = tp.mad('x'))
+    >>> df.summarize(mad_val = tp.mad('x'))
     """
     x = _col_expr(x)
     return (x - x.median()).abs().median()
