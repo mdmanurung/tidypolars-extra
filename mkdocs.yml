@@ -54,7 +54,7 @@ theme:
     toggle:
       icon: material/brightness-4
       name: Switch to light mode
-  logo: _css/tidypolars_extra-logo2.png
+  logo: _css/tidypolars4sci-logo2.png
   features:
     - navigation.tracking
     - navigation.instant
