@@ -76,32 +76,15 @@ suppress_warnings = [
 ]
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = "pydata_sphinx_theme"
+html_theme = "furo"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
 html_theme_options = {
-    "github_url": "https://github.com/mdmanurung/tidypolars-extra",
-    "show_prev_next": True,
-    "navbar_align": "left",
-    "navigation_with_keys": False,
-    "show_toc_level": 2,
-    "header_links_before_dropdown": 4,
-    "icon_links": [
-        {
-            "name": "PyPI",
-            "url": "https://pypi.org/project/tidypolars-extra/",
-            "icon": "fa-solid fa-box",
-        },
-    ],
-}
-
-html_context = {
-    "github_user": "mdmanurung",
-    "github_repo": "tidypolars-extra",
-    "github_version": "main",
-    "doc_path": "docs",
+    "source_repository": "https://github.com/mdmanurung/tidypolars-extra",
+    "source_branch": "main",
+    "source_directory": "docs/",
+    "navigation_with_keys": True,
 }
 
 html_title = "tidypolars-extra"
-html_short_title = "tidypolars-extra"

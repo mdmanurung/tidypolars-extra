@@ -1,9 +1,1 @@
 /* Custom styles for tidypolars-extra docs */
-
-/* Heading underlines */
-.bd-article-container h1,
-.bd-article-container h2,
-.bd-article-container h3 {
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 0.3em;
-}

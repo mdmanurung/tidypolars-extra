@@ -58,7 +58,7 @@ installation
 
 ```{toctree}
 :maxdepth: 2
-:caption: Vignettes
+:caption: Guide
 
 vignettes/01_filter
 vignettes/02_arrange
