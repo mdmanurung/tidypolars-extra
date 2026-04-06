@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tidypolars-extra"
-version = "0.0.1.22"
+version = "0.1.0"
 description = "An extension to tidypolars4sci with additional functionalities for scientific data analysis."
 authors = [{name = "Diogo Ferrari", email = "diogoferrari@gmail.com"}]
 maintainers = [{name = "Michael David Manurung", email = "mdmanurung@users.noreply.github.com"}]
