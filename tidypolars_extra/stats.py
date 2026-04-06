@@ -1,5 +1,4 @@
 import polars as pl
-import numpy as np
 from .utils import (
     _col_expr,
 )
@@ -121,7 +120,9 @@ def last(x):
 
 def length(x):
     """
-    Number of observations in each group
+    Number of observations in each group.
+
+    Alias for :func:`count`.
 
     Parameters
     ----------
@@ -132,8 +133,7 @@ def length(x):
     --------
     >>> df.summarize(length = tp.length(col('x')))
     """
-    x = _col_expr(x)
-    return x.count()
+    return count(x)
 
 def floor(x):
     """
@@ -372,12 +372,12 @@ def rank(x, method='dense'):
 
     Examples
     --------
-    >>> min_rank([10, 20, 20, 30])
-    [1, 2, 2, 4]
-    >>> min_rank([3, 1, 2])
+    >>> rank([10, 20, 20, 30])
+    [1, 2, 2, 3]
+    >>> rank([3, 1, 2])
     [3, 1, 2]  # since sorted order is 1,2,3 => ranks are assigned as per their order
-    >>> min_rank(["b", "a", "a", "c"])
-    [2, 1, 1, 4]
+    >>> rank(["b", "a", "a", "c"])
+    [2, 1, 1, 3]
     """
 
     x = _col_expr(x)

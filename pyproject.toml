@@ -37,8 +37,12 @@ dependencies = [
 sav = [
   "pyreadstat",
 ]
+r = [
+  "rpy2",
+]
 dev = [
   "pytest>=7.0",
+  "ruff>=0.4.0",
 ]
 
 [project.urls]
@@ -52,3 +56,37 @@ include = ["tidypolars_extra/**"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["tidypolars_extra"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+  "F",      # pyflakes
+  "E",      # pycodestyle errors
+  "W",      # pycodestyle warnings
+  "I",      # isort
+]
+ignore = [
+  "E501",   # line too long (handled by formatter or left to author discretion)
+  "E711",   # comparison to None (used in codebase style: x == None)
+  "E712",   # comparison to True/False (used in codebase style: x == True)
+  "E741",   # ambiguous variable name (common in math-heavy code)
+  "F401",   # unused imports (wildcard re-exports are intentional)
+  "F811",   # redefinition of unused name (common with aliases)
+  "E731",   # lambda assignment (used in codebase style)
+  "W291",   # trailing whitespace (cosmetic, defer to formatter)
+  "W293",   # whitespace before ':' (cosmetic, defer to formatter)
+  "E402",   # module level import not at top (lazy imports are intentional)
+  "E701",   # multiple statements on one line (used in codebase style)
+  "E722",   # bare except (existing pattern in codebase)
+  "E401",   # multiple imports on one line
+  "I001",   # import sorting (defer to future cleanup)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F403"]  # wildcard imports are intentional
+"tibble_df.py" = ["F403", "F405"]  # wildcard imports from reexports/stats/type_conversion
+"reexports.py" = ["F401"]  # re-exports are intentional
+"tests/*" = ["E721"]  # type() comparisons are used in existing tests

@@ -2,15 +2,12 @@ from __future__ import annotations
 
 from .tibble_df import from_pandas, from_polars
 from .utils import _filter_kwargs_for, _expand_to_full_path_or_url
-# 
+
 import polars as pl
-import copy
 import re, os
 import pandas as pd
 from dataclasses import dataclass
-from typing import Callable, List
-from typing import Callable, List, Any
-from typing import Dict, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional
 
 __all__ = [
     "read_data",
@@ -238,7 +235,7 @@ class read_data():
                       "a Google spreadsheet, check the 'read_data' documentation.")
                 df = None
         else:
-            read_dask(fn, **kws)
+            raise NotImplementedError("big_data mode is not currently supported.")
 
         print("done!") if not silently else None
         return df
@@ -546,11 +543,3 @@ class read_data():
         mapping = dict(zip(df_data.columns, new_names))
         res = from_polars(df_data.rename(mapping))
         return res
-
-class read_dask:
-         
-   def __new__(cls):
-        print("To be implemented.")
-        #     # return eDask(fn, **kws)
-        #     return ddf.read_csv(fn, **kws)
-        return None

@@ -61,7 +61,9 @@ def paste0(*args):
 
 def str_c(*args, sep = ''):
     """
-    Concatenate strings together
+    Concatenate strings together.
+
+    Alias for :func:`paste`.
 
     Parameters
     ----------
@@ -161,7 +163,7 @@ def str_length(string):
     >>> df.mutate(x = str_length(col('name')))
     """
     string = _col_expr(string)
-    return string.str.len_bytes()
+    return string.str.len_chars()
 
 def str_starts(string, pattern, negate = False):
     """
