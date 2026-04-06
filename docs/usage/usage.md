@@ -1,8 +1,8 @@
-tidypolars$^{4sci} $ methods are designed to work like tidyverse
+tidypolars-extra methods are designed to work like tidyverse
 functions. This creates a dataframe:
 
 ``` {.python exports="code" results="none" tangle="src-usage.py" cache="yes" noweb="no" session="*Python*" linenums="1"}
-import tidypolars4sci as tp
+import tidypolars_extra as tp
 
 df = tp.tibble({"x" : range(6),
                 "y" : range(6, 12),
@@ -10,7 +10,7 @@ df = tp.tibble({"x" : range(6),
                 "z" : ['a', 'a', 'b', 'c', 'd', 'e']}) # (1)!
 ```
 
-1.  Creates a tibble (the data frame of tidypolars$^{4sci} $)
+1.  Creates a tibble (the data frame of tidypolars-extra)
 
 Here is the dataframe created:
 

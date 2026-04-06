@@ -8,7 +8,7 @@ standard format. The table below is an example from Fournier, Soroka,
 and Nir (2020) showing the effect of negative and positive televised
 news reports and political ideology on people\'s emotional arousal and
 activation, captured by physiological galvanic skin activity. It is easy
-to produce this type of table with tidypolars$^{4sci}$, keeping
+to produce this type of table with tidypolars-extra, keeping
 everything in a tidy format.
 
 ![](./tables-and-figures/fournier2020negativity-table-3.png)
@@ -19,9 +19,9 @@ The synthetic data `vote` contains information about Democratic and
 Republican voters, including demographics and voting behavior:
 
 ``` {.python exports="both" results="output code" tangle="src-regression-table.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python*" title="Loading data and modules" linenums="1"}
-import tidypolars4sci as tp
+import tidypolars_extra as tp
 import tools4sci as t4
-from tidypolars4sci.data import vote as df
+from tidypolars_extra.data import vote as df
 import numpy as np
 # 
 from statsmodels.formula.api import ols as lm
@@ -90,7 +90,7 @@ def predict(fit, data, at):
 
 ```
 
-And here is how to run the estimation in tidypolars$^{4sci} $ and
+And here is how to run the estimation in tidypolars-extra and
 produce a table with tidy results (click on the (+) sign to see code
 comments):
 
@@ -336,7 +336,7 @@ Std. Error  &  Classical  &  Classical  &  Clustered  &  Clustered \\
 ### Grouping rows
 
 We can group the rows in the table by post-processing the `tibble`
-outcome from the `models2tab()` function using tidypolars$^{4sci} $
+outcome from the `models2tab()` function using tidypolars-extra
 function `to_latex()`. Something like this:
 
 ![](./tables-and-figures/regression-table-latex-1-grouped-rows.png)
@@ -437,7 +437,7 @@ We can also group columns instead, producing something like this:
 ![](./tables-and-figures/regression-table-latex-1-grouped-cols.png)
 
 We need to post-process the `tibble` outcome from the `models2tab()`
-function using tidypolars$^{4sci} $ function `to_latex()`. The code:
+function using tidypolars-extra function `to_latex()`. The code:
 
 ``` {.python exports="both" results="output code latex" tangle="src-regression-table.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python*"}
 caption = "A regression table"

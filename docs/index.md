@@ -1,10 +1,10 @@
 
 
   <div class="image">
-    <!-- <img src="https://github.com/DiogoFerrari/tidypolars4sci/blob/master/docs/tidypolars4sci.png?raw=True" alt="Description" style="max-width: 500px; margin-left: 10px"> -->
-    <!-- <img src="./tidypolars4sci.png" alt="Description" style="max-width: 1000px; margin-left: 0px"> -->
+    <!-- <img src="https://github.com/DiogoFerrari/tidypolars_extra/blob/master/docs/tidypolars_extra.png?raw=True" alt="Description" style="max-width: 500px; margin-left: 10px"> -->
+    <!-- <img src="./tidypolars_extra.png" alt="Description" style="max-width: 1000px; margin-left: 0px"> -->
 	<!-- NOTE: style="max-width: 100%; height: auto;"  makes the image auto-shrink for smartphones-->
-    <img src="./_css/tidypolars4sci.png" alt="Description" style="max-width: 100%; height: auto;">
+    <img src="./_css/tidypolars_extra.png" alt="Description" style="max-width: 100%; height: auto;">
 
   </div>
   
@@ -17,8 +17,8 @@
   <!-- <a href="https://crates.io/crates/polars"> -->
   <!--   <img src="https://img.shields.io/crates/v/polars.svg" alt="Rust crates Latest Release"/> -->
   <!-- </a> -->
-  <a href="https://pypi.org/project/tidypolars4sci/">
-    <img src="https://img.shields.io/pypi/v/tidypolars4sci.svg" alt="PyPI Latest Release"/>
+  <a href="https://pypi.org/project/tidypolars_extra/">
+    <img src="https://img.shields.io/pypi/v/tidypolars_extra.svg" alt="PyPI Latest Release"/>
   </a>
   
   
@@ -38,13 +38,13 @@
 <!-- dprint-ignore-end -->
 
 
-<!-- # TidyPolars $^{4sci}$ -->
+<!-- # TidyPolars Extra -->
 
 <!-- <div class="two-column"> -->
 <!--   <div class="text"> -->
 <!--     <p> -->
-<!-- <b>tidypolars4sci</b> provides functions that match as closely as possible to R's <a href="https://www.tidyverse.org/">Tidyverse</a> functions for manipulating data frames and conducting data analysis in Python using the blazingly fast <a href="https://github.com/pola-rs/polars">Polars</a> as backend.</p> -->
-<!-- <p>The name <strong>tidypolars4sci</strong> reflects the module's main features:</p> -->
+<!-- <b>tidypolars_extra</b> provides functions that match as closely as possible to R's <a href="https://www.tidyverse.org/">Tidyverse</a> functions for manipulating data frames and conducting data analysis in Python using the blazingly fast <a href="https://github.com/pola-rs/polars">Polars</a> as backend.</p> -->
+<!-- <p>The name <strong>tidypolars_extra</strong> reflects the module's main features:</p> -->
 <!-- <ol> -->
 <!--     <li>Matches the function names and functionalities of R's <a href="https://tidyverse.org/">Tidyverse</a>.</li> -->
 <!--     <li>Leverages the performance and efficiency of <a href="https://github.com/pola-rs/polars">Polars</a> under the hood.</li> -->
@@ -53,13 +53,13 @@
 <!-- 	</p> -->
 <!--   </div> -->
 <!--   <div class="image"> -->
-<!--     <img src="https://github.com/DiogoFerrari/tidypolars4sci/blob/master/docs/tidypolars4sci.png?raw=True" alt="Description" style="max-width: 500px; margin-left: 10px"> -->
+<!--     <img src="https://github.com/DiogoFerrari/tidypolars_extra/blob/master/docs/tidypolars_extra.png?raw=True" alt="Description" style="max-width: 500px; margin-left: 10px"> -->
 <!--   </div> -->
 <!-- </div> -->
 
-The primary motivation behind **tidypolars$^{4sci}$** is to streamline and enhance the process of data analysis in Python, specifically aimed at analysis for publication in academic journals. **tidypolars$^{4sci}$** aims to empower researchers and analysts to **organize data and conduct and report data analyses** more efficiently and effectively, with minimal code, optimized computation, and Tidyverse-like syntax.
+The primary motivation behind **tidypolars-extra** is to streamline and enhance the process of data analysis in Python, specifically aimed at analysis for publication in academic journals. **tidypolars-extra** aims to empower researchers and analysts to **organize data and conduct and report data analyses** more efficiently and effectively, with minimal code, optimized computation, and Tidyverse-like syntax.
 
-**tidypolars$^{4sci}$** provides functions that match as closely as possible to R's [Tidyverse](https://www.tidyverse.org/) functions for manipulating data frames and conducting data analysis in Python using the blazingly fast [Polars](https://github.com/pola-rs/polars) as backend.
+**tidypolars-extra** provides functions that match as closely as possible to R's [Tidyverse](https://www.tidyverse.org/) functions for manipulating data frames and conducting data analysis in Python using the blazingly fast [Polars](https://github.com/pola-rs/polars) as backend.
 
 # Key features
 
@@ -79,19 +79,19 @@ The primary motivation behind **tidypolars$^{4sci}$** is to streamline and enhan
 
 <!-- ## Details -->
 
-<!-- **tidypolars$^{4sci}$** is an **extended** API for [Polars](https://github.com/pola-rs/polars). One of the **main advantages** of using Polars as a data manipulation engine is its exceptional speed when compared to other alternatives (see [here](https://pola.rs/posts/benchmarks/)). -->
+<!-- **tidypolars-extra** is an **extended** API for [Polars](https://github.com/pola-rs/polars). One of the **main advantages** of using Polars as a data manipulation engine is its exceptional speed when compared to other alternatives (see [here](https://pola.rs/posts/benchmarks/)). -->
 
-<!-- The primary distinction between **tidypolars$^{4sci}$** and Polars lies in user interaction. The frontend functions are designed to closely resemble those available in R's [Tidyverse](https://tidyverse.org/), making it easier for users familiar with that ecosystem to transition to this library. -->
+<!-- The primary distinction between **tidypolars-extra** and Polars lies in user interaction. The frontend functions are designed to closely resemble those available in R's [Tidyverse](https://tidyverse.org/), making it easier for users familiar with that ecosystem to transition to this library. -->
 
-<!-- Another useful feature of **tidypolars$^{4sci}$** is its extensive functionality aimed at facilitating data analysis and reporting for scientific research and academic publications. This includes the creation of LaTeX tables, which enhances the presentation of results. -->
+<!-- Another useful feature of **tidypolars-extra** is its extensive functionality aimed at facilitating data analysis and reporting for scientific research and academic publications. This includes the creation of LaTeX tables, which enhances the presentation of results. -->
 
 <!-- ## Performance -->
 
 # Syntax
 
-The main motivation for **tidypolars$^{4sci}$** was to provide more readable and elegant syntax in Python for [Polars](https://docs.pola.rs/), similar to R's [Tidyverse](https://www.tidyverse.org/), while (1) extending Polars functionalities to facilitate data manipulation and (2) keeping the advantages of speed and efficiency in data processing provided by that module. Here are some examples of syntax differences:
+The main motivation for **tidypolars-extra** was to provide more readable and elegant syntax in Python for [Polars](https://docs.pola.rs/), similar to R's [Tidyverse](https://www.tidyverse.org/), while (1) extending Polars functionalities to facilitate data manipulation and (2) keeping the advantages of speed and efficiency in data processing provided by that module. Here are some examples of syntax differences:
 
-=== "tidypolars4sci"
+=== "tidypolars_extra"
     ```python
 	tab = (df
 		   .filter(tp.col("carb")<8)
@@ -170,9 +170,9 @@ The main motivation for **tidypolars$^{4sci}$** was to provide more readable and
 # Performance
 
 
-In most cases, the performance of **tidypolars$^{4sci}$** is comparable to Polars. In some instances, it may operate slightly slower due to the additional functionalities provided by the module. Check the section [Performance](performance/overview.md) for details.
+In most cases, the performance of **tidypolars-extra** is comparable to Polars. In some instances, it may operate slightly slower due to the additional functionalities provided by the module. Check the section [Performance](performance/overview.md) for details.
 
 <!-- ## Similar projects -->
 
-<!-- - [tidypolars](https://pypi.org/project/tidypolars/): tidypolars was the starting point of tidypolars4sci -->
+<!-- - [tidypolars](https://pypi.org/project/tidypolars/): tidypolars was the starting point of tidypolars_extra -->
 

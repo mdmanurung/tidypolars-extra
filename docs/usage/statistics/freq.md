@@ -8,8 +8,8 @@ cases (N), standard deviation (Std.Dev.), and lower (low) and upper
 provided.
 
 ``` {#freq .python exports="both" results="output code" tangle="freq.py" cache="yes" noweb="no" session="*Python-Org*"}
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars as df
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars as df
 
 # Notes:
 # - .arrange() below is just sorting the rows to facilitate visualization.

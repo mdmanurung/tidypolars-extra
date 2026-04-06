@@ -2,8 +2,8 @@
 ** Preamble :noexport:
 
 #+BEGIN_SRC python :exports none :results none :tangle performance.py :cache yes :noweb no :session *Python-Org*
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars
 import matplotlib.pyplot as plt
 import seaborn as sns
 import polars as pl
@@ -39,13 +39,13 @@ def plot_compare(pan, pol, tid):
     ax[0][1].scatter (range(len(pol)), tid/pol, color='gray', alpha=.2)
     ax[0][1].hlines (y=(tid/pol).mean(), xmin=0, xmax=len(pol), color='black' ,linewidth=3)
     ax[0][1].text (y=(tid/pol).mean(), x=0, s=f"Average: {(tid/pol).mean():.2}", color='black', size=12, va='bottom', weight='bold')
-    ax[0][1].set_ylabel('Ratio time elapsed:\nTidyPolars$^{4sci}$/Polars')
+    ax[0][1].set_ylabel('Ratio time elapsed:\nTidyPolars Extra/Polars')
     ax[0][1].set_xlabel('Iteration')
     
     sns.histplot(pan/pol, kde=True, ax=ax[1][0], edgecolor='white', color='black')
     ax[1][0].set_xlabel('Time ratio (in seconds)\nPandas/Polars')
     sns.histplot(tid/pol, kde=True, ax=ax[1][1], edgecolor='white', color='gray')
-    ax[1][1].set_xlabel('Time ratio (in seconds)\nTidyPolars$^{4sci}$/Polars')
+    ax[1][1].set_xlabel('Time ratio (in seconds)\nTidyPolars Extra/Polars')
     
     for i in range(2):
         ax[0][i].hlines(y=1, xmin=0, xmax=len(pol), color='red', linestyle='--')
@@ -90,7 +90,7 @@ def pivot_wide_with_polars(df):
     elapsed = time.time() - start_time
     return {'tab':tab, 'elapsed':elapsed}
 
-def pivot_wide_with_tidypolars4sci(df):
+def pivot_wide_with_tidypolars_extra(df):
     start_time = time.time()
     col = 'name'
     tab = (df
@@ -109,8 +109,8 @@ def pivot_wide_with_tidypolars4sci(df):
 Let us use the data set ~mtcars~ to create a table in wide format using ~pivot_wide~. Here are the variables
 
 #+BEGIN_SRC python :exports both :results output code :tangle performance.py :cache yes :noweb no :session *Python-Org*
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars
 
 mtcars.glimpse()
 #+END_SRC
@@ -139,7 +139,7 @@ carb <int64>     6    0 0% [4 4 1 1 2 1 4 2 2 4 4 3 3 3 4 4 4 1 2 1 1 2 2 4 2 1 
 A simple pivot wide operation:
 
 #+BEGIN_SRC python :exports both :results output code :tangle pivot-wide.py :cache yes :noweb no :session *Python-Org*
-from tidypolars4sci.data import mtcars
+from tidypolars_extra.data import mtcars
 
 tab = (mtcars
        .select('name', 'am')
@@ -160,25 +160,25 @@ shape: (1, 2)
 #+end_src
 
 
-Table below shows summary after 1,000 repetitions comparing the same operation in Pandas, Polars, and tidypolars4sci:
+Table below shows summary after 1,000 repetitions comparing the same operation in Pandas, Polars, and tidypolars_extra:
 
 #+BEGIN_SRC python :exports results :results output code :tangle performance.py :cache yes :noweb no :session *Python-Org*
 
 pivot_wide_with_pandas(mtcars.to_pandas())
 pivot_wide_with_polars(mtcars.to_polars())
-pivot_wide_with_tidypolars4sci(mtcars)
+pivot_wide_with_tidypolars_extra(mtcars)
 # 
 pan, pol, tid = [],[],[]
 for i in range(1_000):
     pan += [pivot_wide_with_pandas(mtcars.to_pandas())['elapsed']]
     pol += [pivot_wide_with_polars(mtcars.to_polars())['elapsed']]
-    tid += [pivot_wide_with_tidypolars4sci(mtcars)['elapsed']]
+    tid += [pivot_wide_with_tidypolars_extra(mtcars)['elapsed']]
 pan = np.array(pan) 
 pol = np.array(pol)
 tid = np.array(tid)
 
 df = tp.tibble({
-    'Mpdule':['Pandas', "Polars", "TidyPolars4sci"],
+    'Mpdule':['Pandas', "Polars", "TidyPolars Extra"],
     'Mean (sec)' :[pan.mean(), pol.mean(), tid.mean()],
     'SD (sec)' :[pan.std(), pol.std(), tid.std()],
     'Min (sec)' :[pan.min(), pol.min(), tid.min()],
@@ -200,7 +200,7 @@ shape: (3, 6)
 │ str                     f64        f64         f64         f64   str                          │
 ╞═══════════════════════════════════════════════════════════════════════════════════════════════╡
 │ Polars              0.00042    0.00010     0.00026     0.00099   1.0x (baseline)              │
-│ TidyPolars4sci      0.00079    0.00022     0.00049     0.00199   1.9x                         │
+│ TidyPolars Extra      0.00079    0.00022     0.00049     0.00199   1.9x                         │
 │ Pandas              0.00227    0.00065     0.00147     0.00544   5.4x                         │
 └───────────────────────────────────────────────────────────────────────────────────────────────┘
 #+end_src
@@ -232,7 +232,7 @@ print(
 ** Sintax comparison
 
 #+BEGIN_EXPORT md
-=== "tidypolars4sci"
+=== "tidypolars_extra"
     ```python
     tab = (df
            .select(col, 'am')

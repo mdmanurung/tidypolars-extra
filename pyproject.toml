@@ -6,9 +6,9 @@ build-backend = "hatchling.build"  # when with internet access
 
 
 [project]
-name = "tidypolars4sci"
+name = "tidypolars-extra"
 version = "0.0.1.22"
-description = "Tidyverse-like functions for python polars with extended functionalities for science."
+description = "An extension to tidypolars4sci with additional functionalities for scientific data analysis."
 authors = [{name = "Diogo Ferrari", email = "diogoferrari@gmail.com"}]
 maintainers = [{name = "Diogo Ferrari", email = "diogoferrari@gmail.com"}]
 license = "MIT"
@@ -32,10 +32,10 @@ dependencies = [
 ]
 
 [tool.setuptools.package-data]
-tidypolars4sci.data = ["*.csv", "*.rda"]
+tidypolars_extra.data = ["*.csv", "*.rda"]
 
 [project.urls]
-Homepage = "https://github.com/DiogoFerrari/tidypolars4sci"
-Documentation = "https://github.com/DiogoFerrari/tidypolars4sci"
-Changelog = "https://github.com/DiogoFerrari/tidypolars4sci/blob/master/CHANGELOG.md"
-Issues = "https://github.com/DiogoFerrari/tidypolars4sci/issues/"
+Homepage = "https://github.com/mdmanurung/tidypolars-extra"
+Documentation = "https://github.com/mdmanurung/tidypolars-extra"
+Changelog = "https://github.com/mdmanurung/tidypolars-extra/blob/master/CHANGELOG.md"
+Issues = "https://github.com/mdmanurung/tidypolars-extra/issues/"

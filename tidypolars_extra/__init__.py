@@ -1,6 +1,6 @@
 try:
     from importlib.metadata import version
-    __version__ = version("tidypolars4sci")
+    __version__ = version("tidypolars_extra")
 except:
     __version__ = ""
 

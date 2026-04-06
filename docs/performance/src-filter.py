@@ -16,7 +16,7 @@ df_polars = df_tp.to_polars()
 # collect processing time
 processing_time = {'pandas': [],
                    'polars': [],
-                   'tidypolars4sci': [],
+                   'tidypolars_extra': [],
                    }
 
 # pandas 
@@ -38,7 +38,7 @@ for _ in range(m):
 for _ in range(m):
     start_time = time.time()
     df_tp.filter((tp.col('a')=='apple') | (tp.col('a')=='banana'))
-    processing_time['tidypolars4sci'] += [time.time() - start_time]
+    processing_time['tidypolars_extra'] += [time.time() - start_time]
 
 # summary
 compare(processing_time).print()

@@ -1,9 +1,9 @@
 
 # Project information
-site_name: TidyPolars(4sci) - User guide
-site_url: https://www.diogoferrari.com/tidypolars4sci
-repo_url: https://github.com/DiogoFerrari/tidypolars4sci
-repo_name: tidypolars4sci
+site_name: TidyPolars Extra - User guide
+site_url: https://github.com/mdmanurung/tidypolars-extra
+repo_url: https://github.com/mdmanurung/tidypolars-extra
+repo_name: tidypolars-extra
 use_directory_urls: true
 
 nav:
@@ -54,7 +54,7 @@ theme:
     toggle:
       icon: material/brightness-4
       name: Switch to light mode
-  logo: _css/tidypolars4sci-logo2.png
+  logo: _css/tidypolars_extra-logo2.png
   features:
     - navigation.tracking
     - navigation.instant
@@ -105,7 +105,7 @@ plugins:
             show_object_full_path: true
           #
           # below here for API per page
-          paths: ["tidypolars4sci"] # <-- for the API docstring using .py (per page docstring)
+          paths: ["tidypolars_extra"] # <-- for the API docstring using .py (per page docstring)
   - section-index
   - autolinks 
   # starting here for one docstring per page

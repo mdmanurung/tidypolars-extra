@@ -201,7 +201,7 @@ def where(col_type):
 
     Examples
     --------
-    >>> from tidypolars4sci.data import mtcars
+    >>> from tidypolars_extra.data import mtcars
     >>> df = mtcars
     >>> df.select(tp.where("integer"))
     >>> df.select(tp.where("numeric"))

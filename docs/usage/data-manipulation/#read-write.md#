@@ -6,7 +6,7 @@ function accepts various formats, including
 relative paths.
 
 ``` {.python exports="both" results="output code" tangle="src-read-write.py" cache="yes" noweb="no" session="*Python*"  linenums="1" title='abc'}
-import tidypolars4sci as tp
+import tidypolars_extra as tp
 
 fn = "../../src/data/example.csv"
 df = tp.read_data(fn=fn)

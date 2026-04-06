@@ -6,7 +6,7 @@
 from docs.src.config import *
 from docs.src.performance import *
 # 
-import tidypolars4sci as tp
+import tidypolars_extra as tp
 import time
 from numpy.random import uniform as runif
 from numpy.random import normal as rnorm
@@ -43,7 +43,7 @@ def on_polars(df):
     mean = df_pl.select([pl.col(col).mean().alias(f"{col}_mean") for col in df.columns])
     std = df_pl.select([pl.col(col).std().alias(f"{col}_std") for col in df.columns])
 
-def on_tidypolars4sci(df):
+def on_tidypolars_extra(df):
     df.summarise(**{f"{col}_mean": tp.col(col).mean() for col in df.names},
                  **{f"{col}_std": tp.col(col).std() for col in df.names},
                  )
@@ -54,7 +54,7 @@ m = 1_000      # repetitions
 # collect processing time
 processing_time = {'pandas': [],
                    'polars': [],
-                   'tidypolars4sci': [],
+                   'tidypolars_extra': [],
                    }
 # 
 for i in range(m):
@@ -69,8 +69,8 @@ for i in range(m):
     processing_time['polars'] += [time.time() - start_time]
 
     start_time = time.time()
-    on_tidypolars4sci(mtcars)
-    processing_time['tidypolars4sci'] += [time.time() - start_time]
+    on_tidypolars_extra(mtcars)
+    processing_time['tidypolars_extra'] += [time.time() - start_time]
 
 ```
 
@@ -83,7 +83,7 @@ shape: (3, 6)
 │ str                  f64       f64       f64       f64   str                          │
 ╞═══════════════════════════════════════════════════════════════════════════════════════╡
 │ polars           0.00047   0.00015   0.00023   0.00143   1.0x (baseline)              │
-│ tidypolars4sci   0.00084   0.00024   0.00047   0.00266   1.8x                         │
+│ tidypolars_extra   0.00084   0.00024   0.00047   0.00266   1.8x                         │
 │ pandas           0.00223   0.00050   0.00152   0.00563   4.8x                         │
 └───────────────────────────────────────────────────────────────────────────────────────┘
 ```

@@ -1,8 +1,8 @@
 from docs.src.config import *
 
-import tidypolars4sci as tp
+import tidypolars_extra as tp
 import tools4sci as t4
-from tidypolars4sci.data import vote as df
+from tidypolars_extra.data import vote as df
 # 
 from statsmodels.formula.api import ols as lm
 from statsmodels.formula.api import glm as glm

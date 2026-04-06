@@ -18,12 +18,12 @@ These are the file types available to save the `tibble` to file:
 ### Save to .csv
 
 Here is an example of how to save a `tibble` to `.csv`. We can use the
-mtcars data provided with tidypolars$^{4sci} $ to illustrate the
+mtcars data provided with tidypolars-extra to illustrate the
 procedure:
 
 ``` {.python exports="both" results="output code" tangle="src-write.py" cache="yes" noweb="no" session="*Python*" linenums="1" eval="always"}
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars as df
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars as df
 
 df.head().print()
 ```
@@ -64,8 +64,8 @@ function multiple times using the argument `copies`. For instance, to
 save a `.csv` file, a copy in `.xlsx`, and another in `.dta`, use:
 
 ``` {.python exports="both" results="output code" tangle="src-write.py" cache="yes" noweb="no" session="*Python*" linenums="1" eval="always"}
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars as df
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars as df
 
 # save data to csv
 df.save_data(fn = '~/Documents/mtcars-data.csv', copies = ["xlsx", ".dta"])
@@ -80,9 +80,9 @@ Save at: ~/Documents
 
 ### Saving to LaTeX
 
-tidypolars$^{4sci} $ has a function `to_latex()` that exports a `tibble`
+tidypolars-extra has a function `to_latex()` that exports a `tibble`
 to LaTeX. Check documentation
-[here](../../api/#tidypolars4sci.tibble_df.tibble.to_latex).
+[here](../../api/#tidypolars_extra.tibble_df.tibble.to_latex).
 
 It is possible to export directly from `save_data` using either as a
 copy, using the argument `copies` (see [Saving copes](#saving-copies))
@@ -91,7 +91,7 @@ or using a filename with `.tex` extension.
 1.  Using a filename with `.tex` extension:
 
 ``` {.python exports="both" results="output code" tangle="src-write.py" cache="yes" noweb="no" session="*Python*" linenums="1" eval="always"}
-from tidypolars4sci.data import mtcars as df
+from tidypolars_extra.data import mtcars as df
 
 df.save_data(fn='~/Documents/table.tex')
 ```
@@ -104,7 +104,7 @@ Save at: ~/Documents
 1.  Using the `copies` argument:
 
 ``` {.python exports="both" results="output code" tangle="src-write.py" cache="yes" noweb="no" session="*Python*" linenums="1" eval="always"}
-from tidypolars4sci.data import mtcars as df
+from tidypolars_extra.data import mtcars as df
 
 df.save_data(fn='~/Documents/table.csv', copies = ['tex'])
 ```
@@ -116,7 +116,7 @@ Save at: ~/Documents
 ```
 
 The latex table will look like this (for customization options, see
-[here](../../api/#tidypolars4sci.tibble_df.tibble.to_latex)):
+[here](../../api/#tidypolars_extra.tibble_df.tibble.to_latex)):
 
 ``` org
 \begin{table}[!htb]

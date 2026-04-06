@@ -1,8 +1,8 @@
 from docs.src.config import *
 from docs.src.performance import *
 # 
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars
 import time
 
 mtcars.glimpse()
@@ -34,7 +34,7 @@ def pivot_wide_with_polars(df):
                   )
            )
 
-def pivot_wide_with_tidypolars4sci(df):
+def pivot_wide_with_tidypolars_extra(df):
     tab = (df
            .select("name", 'am')
            .pivot_wider(values_from="name", names_from='am',
@@ -47,7 +47,7 @@ m = 1_000       # repetitions
 # collect processing time
 processing_time = {'pandas': [],
                    'polars': [],
-                   'tidypolars4sci': [],
+                   'tidypolars_extra': [],
                    }
 # 
 for i in range(m):
@@ -62,8 +62,8 @@ for i in range(m):
     processing_time['polars'] += [time.time() - start_time]
     
     start_time = time.time()
-    pivot_wide_with_tidypolars4sci(mtcars)
-    processing_time['tidypolars4sci'] += [time.time() - start_time]
+    pivot_wide_with_tidypolars_extra(mtcars)
+    processing_time['tidypolars_extra'] += [time.time() - start_time]
 
 compare(processing_time).print(digits=5)
 

@@ -1,5 +1,5 @@
 
-Some modules require pandas or polars dataframes as input. To convert from a tidypolars\(^{4sci} \) tibble to a ~pandas~ or ~polars~ dataframe, use:
+Some modules require pandas or polars dataframes as input. To convert from a tidypolars-extra tibble to a ~pandas~ or ~polars~ dataframe, use:
 
 #+BEGIN_SRC python :exports code :results none :tangle src-usage.py :cache yes :noweb no :session *Python*
 # convert to pandas
@@ -8,7 +8,7 @@ df = df.to_pandas()
 df = df.to_polars()
 #+end_src
 
-To convert from a ~pandas~ or ~polars~ ~DataFrame~ to a tidypolars\(^{4sci}\)'s ~tibble~, use:
+To convert from a ~pandas~ or ~polars~ ~DataFrame~ to a tidypolars-extra's ~tibble~, use:
 
 #+BEGIN_SRC python :exports code :results none :tangle src-usage.py :cache yes :noweb no :session *Python*
 # convert from pandas

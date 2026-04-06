@@ -2,4 +2,4 @@
 
 ## Tibble
 
-::: tidypolars4sci.tibble_df
+::: tidypolars_extra.tibble_df

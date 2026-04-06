@@ -2037,7 +2037,7 @@ class tibble(pl.DataFrame):
         *args and **kws are arguments used in underlying method used
         to save the file, which is based on the file extension.
 
-        * .tex => tidypolars4sci.tibble.to_latex
+        * .tex => tidypolars_extra.tibble.to_latex
 
         * .csv => polars.write_csv   (uses sep=';' as default)
         * .tsv => polars.write_csv   (uses sep='\t' as default)

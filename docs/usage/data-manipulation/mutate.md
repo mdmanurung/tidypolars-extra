@@ -3,8 +3,8 @@
 To create new variables based on the transformation of existing ones:
 
 ``` {.python exports="code" results="none" tangle="02-mutate.py" cache="yes" noweb="no" session="*Python*" linenums="1"}
-import tidypolars4sci as tp
-from tidypolars4sci.data import starwars
+import tidypolars_extra as tp
+from tidypolars_extra.data import starwars
 
 df = (starwars
       .head(5) # (1)!
@@ -34,7 +34,7 @@ shape: (5, 4)
 
 ## Using default functions
 
-TidyPolars$^{4sci} $ provides many default functions that can be applied
+TidyPolars Extra provides many default functions that can be applied
 directly to columns. Here is an example:
 
 ``` {.python exports="both" results="output code" tangle="src-mutate.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python*" linenums="1"}
@@ -66,8 +66,8 @@ The module provides many other default functions to apply to columns.
 Check the API reference for more. Here are some other examples.
 
 ``` {.python exports="both" results="output code" tangle="src-default-functions.py" cache="yes" hlines="yes" colnames="yes" noweb="no" session="*Python*" linenums="1"}
-import tidypolars4sci as tp
-from tidypolars4sci.data import mtcars as df
+import tidypolars_extra as tp
+from tidypolars_extra.data import mtcars as df
 
 
 (df
