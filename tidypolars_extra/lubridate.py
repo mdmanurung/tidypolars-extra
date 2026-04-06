@@ -192,12 +192,7 @@ def dt_round(x, rule, n):
     rule : str
         Units of the downscaling operation.
         Any of:
-            - "month"
-            - "week"
-            - "day"
-            - "hour"
-            - "minute"
-            - "second"
+        ``"month"``, ``"week"``, ``"day"``, ``"hour"``, ``"minute"``, ``"second"``.
     n : int
         Number of units (e.g. 5 "day", 15 "minute".
 
