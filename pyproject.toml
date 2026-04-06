@@ -1,41 +1,32 @@
 [build-system]
-requires = ["hatchling"]           # when with internet access
-build-backend = "hatchling.build"  # when with internet access
-# requires = ["setuptools", "wheel"]     # When offline
-# build-backend = "setuptools.build_meta"# When offline
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 
 [project]
-name = "tidypolars4sci"
-version = "0.0.1.22"
-description = "Tidyverse-like functions for python polars with extended functionalities for science."
+name = "tidypolars4sci_ext"
+version = "0.1.0"
+description = "Extension package for tidypolars4sci — adds extra dplyr/tidyr verbs, joins, ranking, set operations, and more."
 authors = [{name = "Diogo Ferrari", email = "diogoferrari@gmail.com"}]
 maintainers = [{name = "Diogo Ferrari", email = "diogoferrari@gmail.com"}]
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
-requires-python = ">=3.6"
-keywords = ["polars", "tidyverse", "dataframe", "tidy data"]
+requires-python = ">=3.9"
+keywords = ["polars", "tidyverse", "dataframe", "tidy data", "extension"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering"
 ]
 dependencies = [
-	     "numpy",
-	     "pandas",
-	     # "polars==1.30",
-	     "polars",
-	     "pyarrow",
-	     "pyreadr",
-	     "pyreadstat",
+    "tidypolars4sci>=0.0.1.22",
 ]
 
-[tool.setuptools.package-data]
-tidypolars4sci.data = ["*.csv", "*.rda"]
+[tool.hatch.build.targets.wheel]
+packages = ["tidypolars4sci_ext"]
 
 [project.urls]
-Homepage = "https://github.com/DiogoFerrari/tidypolars4sci"
-Documentation = "https://github.com/DiogoFerrari/tidypolars4sci"
-Changelog = "https://github.com/DiogoFerrari/tidypolars4sci/blob/master/CHANGELOG.md"
-Issues = "https://github.com/DiogoFerrari/tidypolars4sci/issues/"
+Homepage = "https://github.com/mdmanurung/tidypolars4sci"
+Documentation = "https://github.com/mdmanurung/tidypolars4sci"
+Issues = "https://github.com/mdmanurung/tidypolars4sci/issues/"

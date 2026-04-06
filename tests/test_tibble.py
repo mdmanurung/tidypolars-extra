@@ -1,5 +1,5 @@
-import tidypolars4sci as tp
-from tidypolars4sci import col
+import tidypolars4sci_ext as tp
+from tidypolars4sci_ext import col
 import polars as pl
 from tidypolars4sci.utils import _repeat
 
