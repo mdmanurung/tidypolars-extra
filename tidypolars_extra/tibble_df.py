@@ -114,7 +114,7 @@ class tibble(pl.DataFrame):
         Returns
         ------- 
         tibble
-            Original tibble orderd by *args
+            Original tibble ordered by ``args``
         """
         exprs = _as_list(args)
         desc = [True if isinstance(expr, DescCol) else False for expr in exprs]
@@ -134,8 +134,8 @@ class tibble(pl.DataFrame):
         Returns
         ------- 
         tibble
-            The original tibble with added columns 
-            from the other tibble specified in *args
+            The original tibble with added columns
+            from the other tibble specified in ``args``
 
         Examples
         --------
@@ -161,8 +161,8 @@ class tibble(pl.DataFrame):
         Returns
         ------- 
         tibble
-            The original tibble with added rows 
-            from the other tibble specified in *args
+            The original tibble with added rows
+            from the other tibble specified in ``args``
 
         Examples
         --------
@@ -249,7 +249,7 @@ class tibble(pl.DataFrame):
         Returns
         ------- 
         tibble
-            Tibble after removing the repeated rows based on *args
+            Tibble after removing the repeated rows based on ``args``
 
         Examples
         --------
@@ -279,7 +279,7 @@ class tibble(pl.DataFrame):
         Returns
         ------- 
         tibble
-            Tibble with columns in *args dropped
+            Tibble with columns in ``args`` dropped
 
         Examples
         --------
@@ -301,7 +301,7 @@ class tibble(pl.DataFrame):
         Returns
         ------- 
         tibble
-            Tibble with rows in *args with missing values dropped
+            Tibble with rows in ``args`` with missing values dropped
 
         Examples
         --------
@@ -1002,14 +1002,12 @@ class tibble(pl.DataFrame):
 
         Parameters
         ----------
-        *args : str, list, dict, of combinations of them
+        *args : str, list, dict, or combinations of them
             Columns to select. It can combine names, list of names,
             and a dict. If dict, it will rename the columns based
             on the dict.
             It also accepts helper functions:
-            - tp.matches(<regex>)
-            - tp.contains(<str>)
-            - tp.where(<str>)
+            ``tp.matches(<regex>)``, ``tp.contains(<str>)``, ``tp.where(<str>)``.
 
         Examples
         --------
@@ -1406,8 +1404,8 @@ class tibble(pl.DataFrame):
         *args : list
             One unamed list is accepted. 
         
-        *kwargs : list
-            keyword will be the variable name, and the values in the list
+        **kwargs : list
+            Keyword will be the variable name, and the values in the list
             will be in the expanded tibble
             
         Returns
@@ -1671,16 +1669,16 @@ class tibble(pl.DataFrame):
         -------
         tibble
             A tibble containing the descriptive statistics.
-            For numerical variables, the statistics include:
-                - N: count of non-missing values
-                - Missing (%): percentage of missing values
-                - Mean: average value
-                - Std.Dev.: standard deviation
-                - Min: minimum value
-                - Max: maximum value
+            For numerical variables, the statistics include
+            N (count of non-missing values),
+            Missing (percentage of missing values),
+            Mean (average value),
+            Std.Dev. (standard deviation),
+            Min (minimum value), and
+            Max (maximum value).
             If grouping is specified, these statistics are computed for each group.
-            When `include_categorical` is True, frequency statistics for categorical variables are appended
-            to the result.
+            When ``include_categorical`` is True, frequency statistics for
+            categorical variables are appended to the result.
         """
         assert isinstance(vars, str) or isinstance(vars, list) or \
             isinstance(vars, dict) or vars is None, \
@@ -2058,8 +2056,9 @@ class tibble(pl.DataFrame):
          
         Notes
         -----
-        *args and **kws are arguments used in underlying method used
-        to save the file, which is based on the file extension.
+        Additional positional and keyword arguments are passed to the
+        underlying method used to save the file, which is based on the
+        file extension.
 
         * .tex => tidypolars_extra.tibble.to_latex
 
@@ -2209,22 +2208,23 @@ class tibble(pl.DataFrame):
 
         header : list of tuples, optional
             The column headers for the LaTeX table. Each tuple corresponds to a column.
-            Ex: This will create upper level header with grouped columns
+            Example creating upper level header with grouped columns::
 
                 [("", "col 1"),
                  ("Group A", "col 2"),
                  ("Group A", "col 3"),
-                 ("Group B", "col 4")
+                 ("Group B", "col 4"),
                  ("Group B", "col 5"),
                 ]
-            This will create two upper level header with grouped columns
+
+            Example creating two upper level headers with grouped columns::
 
                 [("Group 1", ""       , "col 1"),
                  ("Group 1", "Group A", "col 2"),
                  ("Group 1", "Group A", "col 3"),
-                 (""       , "Group B", "col 4")
+                 (""       , "Group B", "col 4"),
                  (""       , "Group B", "col 5"),
-                 ]
+                ]
         digits : int, default=4
             Number of decimal places to round the numerical values in the table.
 
@@ -2255,8 +2255,8 @@ class tibble(pl.DataFrame):
             Name of the variable in the data with values to group
             the rows by.
 
-        group_title_align str, default='l'
-            Alignment of the title of each row group
+        group_title_align : str, default='l'
+            Alignment of the title of each row group.
 
         index : bool, default=False
             Whether to include the index in the LaTeX table.
@@ -2275,12 +2275,11 @@ class tibble(pl.DataFrame):
 
         scale : bool, default=True
             If True, scales the table to fit the linewidth when
-            the table exceeds that size
-            Note: ignored when longtable=True. This is a LaTeX
-                  limitation because longtable does not use
-                  tabular.
+            the table exceeds that size.
+            Ignored when ``longtable=True`` (LaTeX limitation because
+            longtable does not use tabular).
 
-        parse_linebreaks : book, default=True
+        parse_linebreaks : bool, default=True
             If True, parse \\n and replace it with \\makecel
             to produce linebreaks
 

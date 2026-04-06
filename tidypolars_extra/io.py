@@ -148,7 +148,7 @@ class read_data():
     Hierarchical header:
 
     Some data contains a hierarchical header, i.e., a multi-line header.
-    Here is an example with 2 levels:
+    Here is an example with 2 levels::
 
         |----------------------------------------|
         |     Party     |      Age      | Gender |
@@ -159,17 +159,19 @@ class read_data():
         |    0 | Rep    | 33    | 30-39 |  F     |
         |----------------------------------------|
 
-    When that is the case, the argument "``n_headers``" can be
+    When that is the case, the argument ``n_headers`` can be
     used to specify the number of header levels, or lines containing
-    header information. 
-    The function falttens the levels and combines the information into the
-    header name to maintain a tidy format. The rule is
-      * In upper levels (all rows except the last), values equal to
-        multi_col_sentinel, None, or empty string are treated as "merged"
-        and forward-filled horizontally.
-      * In the last level, None or multi_col_sentinel is treated as
-        "missing label" and is simply ignored for that level.
-    The example above becomes:
+    header information.
+    The function flattens the levels and combines the information into the
+    header name to maintain a tidy format. The rule is:
+
+    - In upper levels (all rows except the last), values equal to
+      multi_col_sentinel, None, or empty string are treated as "merged"
+      and forward-filled horizontally.
+    - In the last level, None or multi_col_sentinel is treated as
+      "missing label" and is simply ignored for that level.
+
+    The example above becomes::
 
         |--------------------------------------------------------------------|
         | Party (code)  | Party (value) | Age (value) | Age (group) | Gender |
@@ -178,8 +180,8 @@ class read_data():
         |    0          | Rep           | 33          | 30-39       |  F     |
         |--------------------------------------------------------------------|
 
-    See "``header_combine_rule``" and "``combine_parenthesis_sep``"
-    for more settings
+    See ``header_combine_rule`` and ``combine_parenthesis_sep``
+    for more settings.
 
     Load data from a google spreadsheet:
 

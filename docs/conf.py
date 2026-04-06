@@ -48,7 +48,7 @@ napoleon_include_special_with_doc = False
 # AutoAPI settings
 autoapi_dirs = ["../tidypolars_extra"]
 autoapi_type = "python"
-autoapi_ignore = ["*/data/*"]
+autoapi_ignore = ["*/data/*", "*/reexports*"]
 autoapi_options = [
     "members",
     "undoc-members",
@@ -70,7 +70,10 @@ master_doc = "index"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # Suppress expected warnings
-suppress_warnings = ["autoapi.python_import_resolution"]
+suppress_warnings = [
+    "autoapi.python_import_resolution",
+    "ref.python",
+]
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = "pydata_sphinx_theme"
