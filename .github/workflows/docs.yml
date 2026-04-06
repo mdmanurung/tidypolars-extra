@@ -30,15 +30,15 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install mkdocs-material "mkdocstrings[python]" mkdocs-gen-files mkdocs-literate-nav mkdocs-section-index mkdocs-autolinks-plugin mkdocs-charts-plugin pymdown-extensions python-markdown-math
+          pip install -r docs/requirements.txt
 
       - name: Build documentation
-        run: mkdocs build --strict
+        run: sphinx-build -b html docs docs/_build/html -W
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/
+          path: docs/_build/html/
 
   deploy:
     environment:
