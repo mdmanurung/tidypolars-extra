@@ -85,7 +85,7 @@ to LaTeX. Check documentation
 [here](../../api/#tidypolars_extra.tibble_df.tibble.to_latex).
 
 It is possible to export directly from `save_data` using either as a
-copy, using the argument `copies` (see [Saving copes](#saving-copies))
+copy, using the argument `copies` (see [Saving copies](#saving-copies))
 or using a filename with `.tex` extension.
 
 1.  Using a filename with `.tex` extension:
