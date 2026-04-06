@@ -1,41 +1,53 @@
 [build-system]
-requires = ["hatchling"]           # when with internet access
-build-backend = "hatchling.build"  # when with internet access
-# requires = ["setuptools", "wheel"]     # When offline
-# build-backend = "setuptools.build_meta"# When offline
-
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "tidypolars-extra"
 version = "0.0.1.22"
 description = "An extension to tidypolars4sci with additional functionalities for scientific data analysis."
 authors = [{name = "Diogo Ferrari", email = "diogoferrari@gmail.com"}]
-maintainers = [{name = "Diogo Ferrari", email = "diogoferrari@gmail.com"}]
+maintainers = [{name = "Michael David Manurung", email = "mdmanurung@users.noreply.github.com"}]
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
-requires-python = ">=3.6"
-keywords = ["polars", "tidyverse", "dataframe", "tidy data"]
+requires-python = ">=3.9"
+keywords = ["polars", "tidyverse", "dataframe", "tidy data", "data science"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
-  "Topic :: Scientific/Engineering"
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-	     "numpy",
-	     "pandas",
-	     # "polars==1.30",
-	     "polars",
-	     "pyarrow",
-	     "pyreadr",
-	     "pyreadstat",
+  "numpy",
+  "pandas",
+  "polars>=1.0",
+  "pyarrow",
+  "pyreadr",
+  "pyreadstat",
 ]
 
-[tool.setuptools.package-data]
-tidypolars_extra.data = ["*.csv", "*.rda"]
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/mdmanurung/tidypolars-extra"
 Documentation = "https://github.com/mdmanurung/tidypolars-extra"
 Changelog = "https://github.com/mdmanurung/tidypolars-extra/blob/master/CHANGELOG.md"
 Issues = "https://github.com/mdmanurung/tidypolars-extra/issues/"
+
+[tool.hatch.build.targets.sdist]
+include = ["tidypolars_extra/**"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["tidypolars_extra"]

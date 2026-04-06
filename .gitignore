@@ -55,3 +55,17 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# mkdocs site build
+site/
