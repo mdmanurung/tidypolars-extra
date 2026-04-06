@@ -119,6 +119,9 @@ class tibble(_BaseTibble):
 
     def __init__(self, *args, **kwargs):
         # Allow tibble(x=[1,2], y=[3,4]) syntax like R's tibble()
+        # We call super(_BaseTibble, self) to bypass the upstream tibble's
+        # __init__ and delegate directly to pl.DataFrame.__init__, which
+        # handles dict-based column data natively.
         if len(args) == 0 and len(kwargs) > 0:
             _df_params = {
                 'data', 'schema', 'schema_overrides', 'orient',
@@ -182,6 +185,9 @@ class tibble(_BaseTibble):
     # ------------------------------------------------------------------
     # Compatibility overrides — fixes for current Polars API
     # ------------------------------------------------------------------
+    # NOTE: We use ``super(_BaseTibble, self)`` in join/slice methods to
+    # call ``pl.DataFrame`` methods directly, bypassing the upstream
+    # tibble's custom implementations that may use deprecated Polars API.
 
     def full_join(self, df, left_on=None, right_on=None, on=None, suffix='_right'):
         """Perform a full join (fixes upstream ``'outer'`` → ``'full'``)."""

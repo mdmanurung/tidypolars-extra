@@ -64,6 +64,10 @@ from .ext_tibble import (             # noqa: F401
 # IMPORTANT: Do NOT patch _upstream_tdf.tibble or _upstream_tdf.TibbleGroupBy —
 # the upstream code uses ``super(tibble, self)`` calls that depend on ``tibble``
 # referring to the *upstream* class in the MRO, not the extension class.
+#
+# MAINTENANCE NOTE: If upstream adds new conversion functions (e.g.
+# ``from_arrow``), they won't automatically return the extended tibble.
+# Add similar patches here when that happens.
 _upstream_tdf.from_polars = from_polars
 _upstream_tdf.from_pandas = from_pandas
 
