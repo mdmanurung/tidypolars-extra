@@ -2,18 +2,28 @@
 
 **Tidyverse-style data manipulation for Python, powered by Polars.**
 
-tidypolars-extra provides functions that closely match R's [Tidyverse](https://www.tidyverse.org/) for manipulating data frames in Python, using the fast [Polars](https://docs.pola.rs/) engine as backend.
+tidypolars-extra provides functions that closely match R's
+[Tidyverse](https://www.tidyverse.org/) for manipulating data frames in Python,
+using the fast [Polars](https://docs.pola.rs/) engine as backend.
 
 ## Key Features
 
-- **Fast** — Built on [Polars](https://docs.pola.rs/) for high-performance data manipulation with parallel execution.
-- **Familiar syntax** — API mirrors R's Tidyverse (`filter`, `mutate`, `select`, `summarize`, etc.).
-- **Type conversions** — R-style type coercion functions (`as_integer`, `as_factor`, `as_character`, etc.).
-- **String operations** — `stringr`-style string manipulation (`str_detect`, `str_replace`, `paste`, etc.).
-- **Date/time handling** — `lubridate`-style date functions (`year`, `month`, `mday`, `as_date`, etc.).
-- **Statistics** — Common statistical functions (`mean`, `sd`, `cor`, `quantile`, `scale`, etc.).
-- **I/O support** — Read CSV, Excel, Stata, SPSS, R (RDS/Rdata), and Google Sheets.
-- **LaTeX output** — Export publication-ready LaTeX tables directly from your data.
+- **Fast** — Built on [Polars](https://docs.pola.rs/) for high-performance data
+  manipulation with parallel execution.
+- **Familiar syntax** — API mirrors R's Tidyverse (`filter`, `mutate`, `select`,
+  `summarize`, etc.).
+- **Type conversions** — R-style type coercion functions (`as_integer`,
+  `as_factor`, `as_character`, etc.).
+- **String operations** — `stringr`-style string manipulation (`str_detect`,
+  `str_replace`, `paste`, etc.).
+- **Date/time handling** — `lubridate`-style date functions (`year`, `month`,
+  `mday`, `as_date`, etc.).
+- **Statistics** — Common statistical functions (`mean`, `sd`, `cor`,
+  `quantile`, `scale`, etc.).
+- **I/O support** — Read CSV, Excel, Stata, SPSS, R (RDS/Rdata), and Google
+  Sheets.
+- **LaTeX output** — Export publication-ready LaTeX tables directly from your
+  data.
 
 ## Quick Example
 
@@ -39,9 +49,16 @@ result = (
 )
 ```
 
-## Links
+```{toctree}
+:maxdepth: 2
+:caption: Contents
 
-- [Installation](installation.md)
-- [API Reference](reference/)
-- [GitHub Repository](https://github.com/mdmanurung/tidypolars-extra)
-- [PyPI](https://pypi.org/project/tidypolars-extra/)
+installation
+```
+
+```{toctree}
+:maxdepth: 3
+:caption: API Reference
+
+autoapi/index
+```
