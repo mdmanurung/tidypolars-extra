@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -e .
-          pip install mkdocs-material "mkdocstrings[python]" mkdocs-gen-files mkdocs-literate-nav mkdocs-section-index mkdocs-autolinks-plugin mkdocs-charts-plugin pymdown-extensions python-markdown-math
+          pip install mkdocs-material "mkdocstrings[python]" mkdocs-gen-files mkdocs-literate-nav mkdocs-section-index pymdown-extensions
 
       - name: Build documentation
         run: mkdocs build --strict

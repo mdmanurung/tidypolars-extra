@@ -6,7 +6,7 @@ import ast
 import importlib.util
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Tuple
+from typing import List, Tuple
 import re
 import mkdocs_gen_files
 
@@ -29,13 +29,16 @@ class DocumentedFunction:
     name: str
     signature: str
 
+
 def _format_annotation(annotation: ast.AST | None) -> str:
     if annotation is None:
         return ""
     return ast.unparse(annotation)
 
+
 def _format_default(value: ast.AST) -> str:
     return ast.unparse(value)
+
 
 def _format_arguments(arguments: ast.arguments) -> str:
     parts: List[str] = []
@@ -83,6 +86,7 @@ def _format_arguments(arguments: ast.arguments) -> str:
 
     return ", ".join(parts)
 
+
 def _format_function_signature(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
     prefix = "async def" if isinstance(node, ast.AsyncFunctionDef) else "def"
     arguments = _format_arguments(node.args)
@@ -91,6 +95,7 @@ def _format_function_signature(node: ast.FunctionDef | ast.AsyncFunctionDef) -> 
     if return_annotation:
         signature += f" -> {return_annotation}"
     return signature
+
 
 def _format_class_signature(node: ast.ClassDef) -> str:
     bases = [ast.unparse(base) for base in node.bases]
@@ -105,6 +110,7 @@ def _format_class_signature(node: ast.ClassDef) -> str:
     if inheritances:
         return f"class {node.name}({', '.join(inheritances)})"
     return f"class {node.name}"
+
 
 def _get_documented_members(tree: ast.AST) -> Tuple[List[DocumentedClass], List[DocumentedFunction]]:
     classes: List[DocumentedClass] = []
@@ -125,7 +131,7 @@ def _get_documented_members(tree: ast.AST) -> Tuple[List[DocumentedClass], List[
                     )
                 if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)) and child.name == "__init__":
                     init_signature = _format_function_signature(child)
-            methods.sort(key=lambda documented_method: documented_method.name)
+            methods.sort(key=lambda m: m.name)
             if class_doc or methods:
                 classes.append(
                     DocumentedClass(
@@ -145,13 +151,15 @@ def _get_documented_members(tree: ast.AST) -> Tuple[List[DocumentedClass], List[
                     )
                 )
 
-    classes.sort(key=lambda documented_class: documented_class.name)
-    functions.sort(key=lambda documented_function: documented_function.name)
+    classes.sort(key=lambda c: c.name)
+    functions.sort(key=lambda f: f.name)
 
     return classes, functions
 
+
 def _symbol_html(symbol_kind: str) -> str:
     return f"<code class='doc-symbol doc-symbol-toc doc-symbol-{symbol_kind}'></code>"
+
 
 def _load_api_labels(src_dir: Path) -> dict[str, str]:
     init_path = src_dir / "__init__.py"
@@ -171,24 +179,6 @@ def _load_api_labels(src_dir: Path) -> dict[str, str]:
 
     return {str(key): str(value) for key, value in labels.items()}
 
-def _ensure_tables_and_figures(target_doc_dir: Path) -> None:
-    if not tables_and_figures_dir.is_dir():
-        return
-
-    target_dir = target_doc_dir / "tables-and-figures"
-    target_key = target_dir.as_posix()
-    if target_key in _copied_tables_and_figures_targets:
-        return
-
-    for asset_path in tables_and_figures_dir.rglob("*"):
-        if asset_path.is_file():
-            relative_path = asset_path.relative_to(tables_and_figures_dir)
-            destination = target_dir / relative_path
-            with open(asset_path, "rb") as source_file:
-                with mkdocs_gen_files.open(destination.as_posix(), "wb") as target_file:
-                    target_file.write(source_file.read())
-
-    _copied_tables_and_figures_targets.add(target_key)
 
 def _write_doc_page(
     doc_path: Path,
@@ -196,48 +186,30 @@ def _write_doc_page(
     symbol_kind: str,
     heading_title: str | None,
     signature: str | None,
-    extra_files: Iterable[Path],
     edit_path: Path,
     directive_options: str | None = None,
 ) -> None:
     with mkdocs_gen_files.open(doc_path, "w") as fd:
-        # fd.write("---\nhide:\n  - toc\n---\n\n")
-        # fd.write("---\nhide:\n  - toc\n---\n\n")
         if heading_title:
-            symbol = _symbol_html(symbol_kind)
-            # fd.write(f"## {symbol} {heading_title}\n\n")
             if signature:
-                fd.write(f"## Signature/Parameters\n")
-                # fd.write(f"<code class='doc-symbol doc-symbol-toc doc-symbol-{symbol_kind}'></code> <code class=\"language-python\">\n")
-                # fd.write(f"<pre><code class=\"language-python\">\n")
-                # # fd.write(signature)
-                # fd.write(re.sub(pattern=".*def ", repl='', string=signature))
-                # fd.write("\n</code></pre>\n\n")
-                # fd.write(f"<code class='doc-symbol doc-symbol-toc doc-symbol-{symbol_kind}'></code> <code class=\"language-python\">\n")
-                fd.write(f"``` python\n")
+                fd.write(f"## Signature\n\n")
+                fd.write(f"```python\n")
                 fd.write(signature)
                 fd.write("\n```\n\n")
         fd.write(f"::: {ident}\n")
         if directive_options:
             fd.write(directive_options)
-        for extra_file in extra_files:
-            if extra_file.is_file():
-                fd.write("\n\n")
-                fd.write(extra_file.read_text(encoding="utf-8"))
     mkdocs_gen_files.set_edit_path(doc_path, edit_path)
-    _ensure_tables_and_figures(doc_path.parent)
 
 
-# change these files
+# Configuration
 nav = mkdocs_gen_files.Nav()
 MODULE_NAME = "tidypolars_extra"
 root = Path(__file__).parent.parent.parent
-src = root / MODULE_NAME 
-api_docs_dir = root / "docs" / "api"
-tables_and_figures_dir = api_docs_dir / "tables-and-figures"
-_copied_tables_and_figures_targets: set[Path] = set()
-api_labels = _load_api_labels(src)
+src = root / MODULE_NAME
 
+
+api_labels = _load_api_labels(src)
 
 
 for path in sorted(src.rglob("*.py")):
@@ -270,7 +242,6 @@ for path in sorted(src.rglob("*.py")):
         if documented_class.has_docstring:
             class_doc_path = Path("reference", *class_doc_parts).with_suffix(".md")
             nav[class_nav_key] = Path(*class_doc_parts).with_suffix(".md").as_posix()
-            class_extra_files = [api_docs_dir / f"{module_file_stem}-{class_name}.md"]
             class_signature = documented_class.signature
             if documented_class.init_signature:
                 class_signature = f"{class_signature}\n{documented_class.init_signature}"
@@ -280,7 +251,6 @@ for path in sorted(src.rglob("*.py")):
                 "class",
                 class_name,
                 class_signature,
-                class_extra_files,
                 module_edit_path,
                 directive_options="    options:\n      members: []\n",
             )
@@ -292,16 +262,12 @@ for path in sorted(src.rglob("*.py")):
             method_doc_path = Path("reference", *method_doc_parts).with_suffix(".md")
             method_nav_key = class_nav_key + (f"{_symbol_html('method')} {method_name}",)
             nav[method_nav_key] = Path(*method_doc_parts).with_suffix(".md").as_posix()
-            method_extra_files = [
-                api_docs_dir / f"{module_file_stem}-{class_name}-{method_name}.md"
-            ]
             _write_doc_page(
                 method_doc_path,
                 method_ident,
                 "method",
                 method_name,
                 method.signature,
-                method_extra_files,
                 module_edit_path,
             )
 
@@ -312,14 +278,12 @@ for path in sorted(src.rglob("*.py")):
         function_doc_path = Path("reference", *function_doc_parts).with_suffix(".md")
         function_nav_key = module_nav_parts + (f"{_symbol_html('function')} {function_name}",)
         nav[function_nav_key] = Path(*function_doc_parts).with_suffix(".md").as_posix()
-        function_extra_files = [api_docs_dir / f"{module_file_stem}-{function_name}.md"]
         _write_doc_page(
             function_doc_path,
             function_ident,
             "function",
             function_name,
             function.signature,
-            function_extra_files,
             module_edit_path,
         )
 
