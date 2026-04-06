@@ -57,6 +57,20 @@ installation
 ```
 
 ```{toctree}
+:maxdepth: 2
+:caption: Vignettes
+
+vignettes/01_filter
+vignettes/02_arrange
+vignettes/03_select
+vignettes/04_rename
+vignettes/05_mutate
+vignettes/06_transmute
+vignettes/07_summarize
+vignettes/08_group_by
+```
+
+```{toctree}
 :maxdepth: 3
 :caption: API Reference
 
