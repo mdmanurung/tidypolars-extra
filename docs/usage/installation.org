@@ -1,0 +1,20 @@
+
+** Installation
+:PROPERTIES:
+:CUSTOM_ID: installation
+:END:
+You can install tidypolars_extra with =pip=:
+
+#+begin_src sh
+$ pip3 install tidypolars_extra
+#+end_src
+
+#+RESULTS:
+
+Or through =conda=:
+
+#+begin_src sh
+$ conda install -c conda-forge tidypolars_extra
+#+end_src
+
+#+RESULTS:
