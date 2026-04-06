@@ -227,6 +227,12 @@ class read_data():
             elif fn_type in ACCEPTED_FILES['R files']:
                 df = self.read_Rdata(**kws)
 
+            elif fn_type in ACCEPTED_FILES.get('parquet', []):
+                df = self.read_parquet(**kws)
+
+            elif fn_type in ACCEPTED_FILES.get('json', []):
+                df = self.read_json(**kws)
+
             elif kws.get('url', None) and kws.get('credentials', None):
                 df =self.read_gspread(**kws)
 
@@ -367,6 +373,19 @@ class read_data():
 
         return df
 
+    def read_parquet(**kws):
+        """Read a Parquet file"""
+        fn = kws.get("fn", None)
+        return from_polars(pl.read_parquet(fn))
+
+    def read_json(**kws):
+        """Read a JSON or NDJSON file"""
+        fn = kws.get("fn", None)
+        _, ext = os.path.splitext(fn)
+        if ext.lower() in ['.ndjson']:
+            return from_polars(pl.read_ndjson(fn))
+        return from_polars(pl.read_json(fn))
+
     def get_accepted_file_formats(_print=False):
         ACCEPTED_FILES = {
             'csv-like'                : ['.csv', '.CSV', '.tsv','.TSV', '.dat', '.DAT', '.txt', '.TXT'],
@@ -375,6 +394,8 @@ class read_data():
             'R files'                 : ['.Rdata', '.rdata', '.rda', '.rds'],
             'Stata files'             : ['.dta', '.DTA'],
             'SPSS files'              : ['.sav'],
+            'parquet'                 : ['.parquet', '.PARQUET'],
+            'json'                    : ['.json', '.JSON', '.ndjson', '.NDJSON'],
             'URL'                     : ['URL with any of the supported file types'],
             'Google Drive Spreadsheet': ['See documentation'],
         }

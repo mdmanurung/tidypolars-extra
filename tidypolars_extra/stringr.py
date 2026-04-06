@@ -7,17 +7,24 @@ __all__ = [
     "paste",
     "paste0",
     "str_c",
-    "str_detect", 
+    "str_count",
+    "str_detect",
+    "str_dup",
     "str_extract",
+    "str_extract_all",
     "str_length",
+    "str_pad",
     "str_remove_all",
-    "str_remove", 
-    "str_replace_all", 
-    "str_replace", 
+    "str_remove",
+    "str_replace_all",
+    "str_replace",
     "str_ends",
+    "str_split",
+    "str_squish",
     "str_starts",
     "str_sub",
-    "str_to_lower", 
+    "str_to_lower",
+    "str_to_title",
     "str_to_upper",
     "str_trim",
     "str_wrap"
@@ -383,4 +390,150 @@ def str_wrap(string, width, sep="list"):
         s = map(s, lambda row: f"{sep}".join(row[0]))
     return s
 
-        
+def str_count(string, pattern):
+    """
+    Count occurrences of a pattern in a string
+
+    Parameters
+    ----------
+    string : Expr, str
+        Column to operate on
+    pattern : str
+        Regular expression pattern to count
+
+    Examples
+    --------
+    >>> df.mutate(n = tp.str_count('x', 'a'))
+    """
+    string = _col_expr(string)
+    return string.str.count_matches(pattern)
+
+def str_pad(string, width, side = 'left', pad = ' '):
+    """
+    Pad a string to a specified width
+
+    Parameters
+    ----------
+    string : Expr, str
+        Column to operate on
+    width : int
+        Minimum width of resulting string
+    side : str
+        Side to pad on: 'left', 'right', or 'both'
+    pad : str
+        Character to pad with (single character)
+
+    Examples
+    --------
+    >>> df.mutate(padded = tp.str_pad('x', 10))
+    """
+    string = _col_expr(string)
+    if side == 'left':
+        return string.str.pad_start(width, pad)
+    elif side == 'right':
+        return string.str.pad_end(width, pad)
+    elif side == 'both':
+        return string.str.pad_start((width + 1) // 2, pad).str.pad_end(width, pad)
+    return string
+
+def str_split(string, pattern, n = None):
+    """
+    Split a string by a pattern
+
+    Parameters
+    ----------
+    string : Expr, str
+        Column to operate on
+    pattern : str
+        Pattern to split on
+    n : int, optional
+        Maximum number of splits. If None, split all.
+
+    Returns
+    -------
+    Expr
+        A list column with split parts.
+
+    Examples
+    --------
+    >>> df.mutate(parts = tp.str_split('x', '_'))
+    """
+    string = _col_expr(string)
+    if n is not None:
+        return string.str.splitn(pattern, n + 1)
+    return string.str.split(pattern)
+
+def str_squish(string):
+    """
+    Remove leading/trailing whitespace and collapse internal whitespace
+
+    Parameters
+    ----------
+    string : Expr, str
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(clean = tp.str_squish('x'))
+    """
+    string = _col_expr(string)
+    return string.str.strip_chars().str.replace_all(r'\s+', ' ')
+
+def str_to_title(string):
+    """
+    Convert string to Title Case
+
+    Parameters
+    ----------
+    string : Expr, str
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(titled = tp.str_to_title('x'))
+    """
+    string = _col_expr(string)
+    return string.str.to_titlecase()
+
+def str_dup(string, times):
+    """
+    Duplicate/repeat a string
+
+    Parameters
+    ----------
+    string : Expr, str
+        Column to operate on
+    times : int
+        Number of times to repeat
+
+    Examples
+    --------
+    >>> df.mutate(repeated = tp.str_dup('x', 3))
+    """
+    string = _col_expr(string)
+    parts = [string] * times
+    return pl.concat_str(parts, separator='')
+
+def str_extract_all(string, pattern):
+    """
+    Extract all matches of a pattern
+
+    Parameters
+    ----------
+    string : Expr, str
+        Column to operate on
+    pattern : str
+        Regular expression pattern with capture group
+
+    Returns
+    -------
+    Expr
+        A list column with all matches.
+
+    Examples
+    --------
+    >>> df.mutate(matches = tp.str_extract_all('x', r'\\d+'))
+    """
+    string = _col_expr(string)
+    return string.str.extract_all(pattern)
+
