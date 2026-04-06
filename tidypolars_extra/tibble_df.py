@@ -606,6 +606,88 @@ class tibble(pl.DataFrame):
                             suffix= suffix,
                             coalesce=True).pipe(from_polars)
 
+    def semi_join(self, df, left_on = None, right_on = None, on = None):
+        """
+        Perform a semi join (keep rows with a match in df, no columns added)
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to join with.
+        left_on : str, list
+            Join column(s) of the left DataFrame.
+        right_on : str, list
+            Join column(s) of the right DataFrame.
+        on : str, list
+            Join column(s) of both DataFrames. If set, `left_on` and `right_on` should be None.
+
+        Returns
+        -------
+        tibble
+            Rows from the original tibble that have a match in df.
+
+        Examples
+        --------
+        >>> df1.semi_join(df2, on = 'x')
+        """
+        if (left_on == None) & (right_on == None) & (on == None):
+            on = list(set(self.names) & set(df.names))
+        return super().join(df, on, 'semi',
+                            left_on = left_on,
+                            right_on= right_on).pipe(from_polars)
+
+    def anti_join(self, df, left_on = None, right_on = None, on = None):
+        """
+        Perform an anti join (keep rows without a match in df)
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to join with.
+        left_on : str, list
+            Join column(s) of the left DataFrame.
+        right_on : str, list
+            Join column(s) of the right DataFrame.
+        on : str, list
+            Join column(s) of both DataFrames. If set, `left_on` and `right_on` should be None.
+
+        Returns
+        -------
+        tibble
+            Rows from the original tibble that do not have a match in df.
+
+        Examples
+        --------
+        >>> df1.anti_join(df2, on = 'x')
+        """
+        if (left_on == None) & (right_on == None) & (on == None):
+            on = list(set(self.names) & set(df.names))
+        return super().join(df, on, 'anti',
+                            left_on = left_on,
+                            right_on= right_on).pipe(from_polars)
+
+    def cross_join(self, df, suffix = '_right'):
+        """
+        Perform a cross join (Cartesian product)
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to join with.
+        suffix : str
+            Suffix to append to columns with a duplicate name.
+
+        Returns
+        -------
+        tibble
+            All combinations of rows from both tibbles.
+
+        Examples
+        --------
+        >>> df1.cross_join(df2)
+        """
+        return super().join(df, how='cross', suffix=suffix).pipe(from_polars)
+
     def pivot_longer(self,
                      cols = None,
                      names_to = "name",
@@ -1563,7 +1645,393 @@ class tibble(pl.DataFrame):
 
         return cols
 
-    # Not tidy functions, but useful from pandas/polars 
+    def pipe(self, fn, *args, **kwargs):
+        """
+        Apply a function to the entire DataFrame
+
+        Parameters
+        ----------
+        fn : callable
+            Function to apply. The tibble is passed as the first argument.
+        *args : any
+            Additional positional arguments passed to fn.
+        **kwargs : any
+            Additional keyword arguments passed to fn.
+
+        Returns
+        -------
+        any
+            Result of fn(self, *args, **kwargs).
+
+        Examples
+        --------
+        >>> def add_column(df, name, value):
+        ...     return df.mutate(**{name: value})
+        >>> df.pipe(add_column, 'new_col', 1)
+        """
+        return fn(self, *args, **kwargs)
+
+    def transmute(self, *args, by = None, **kwargs):
+        """
+        Add or modify columns, keeping only the new columns
+
+        Parameters
+        ----------
+        *args : Expr
+            Column expressions to add or modify
+        by : str, list
+            Columns to group by
+        **kwargs : Expr
+            Column expressions to add or modify
+
+        Returns
+        -------
+        tibble
+            A tibble with only the newly created columns (and grouping columns if by is used).
+
+        Examples
+        --------
+        >>> df.transmute(double_a = col('a') * 2)
+        """
+        exprs = _as_list(args) + _kwargs_as_exprs(kwargs)
+        col_names = []
+        for expr in exprs:
+            name = expr.meta.output_name()
+            col_names.append(name)
+
+        out = self.mutate(*args, by = by, **kwargs)
+
+        if _uses_by(by):
+            by_cols = [by] if isinstance(by, str) else list(by)
+            col_names = by_cols + [c for c in col_names if c not in by_cols]
+
+        return out.select(col_names)
+
+    def clean_names(self, case = 'snake'):
+        """
+        Standardize column names
+
+        Parameters
+        ----------
+        case : str
+            Case style for column names. Options: 'snake' (default), 'lower', 'upper'.
+
+        Returns
+        -------
+        tibble
+            A tibble with cleaned column names.
+
+        Examples
+        --------
+        >>> df = tp.tibble(**{"First Name": [1], "Last.Name": [2], "AGE (years)": [30]})
+        >>> df.clean_names()
+        """
+        def _to_snake(name):
+            name = re.sub(r'[^\w\s]', '_', name)
+            name = re.sub(r'\s+', '_', name)
+            name = re.sub(r'([a-z])([A-Z])', r'\1_\2', name)
+            name = re.sub(r'_+', '_', name)
+            name = name.strip('_').lower()
+            return name
+
+        mapping = {}
+        for col_name in self.names:
+            if case == 'snake':
+                new_name = _to_snake(col_name)
+            elif case == 'lower':
+                new_name = col_name.lower()
+            elif case == 'upper':
+                new_name = col_name.upper()
+            else:
+                new_name = _to_snake(col_name)
+            mapping[col_name] = new_name
+
+        return self.rename(mapping)
+
+    def sample_n(self, n, seed = None, with_replacement = False):
+        """
+        Randomly sample n rows
+
+        Parameters
+        ----------
+        n : int
+            Number of rows to sample.
+        seed : int, optional
+            Random seed for reproducibility.
+        with_replacement : bool
+            Whether to sample with replacement.
+
+        Returns
+        -------
+        tibble
+            A tibble with n randomly sampled rows.
+
+        Examples
+        --------
+        >>> df.sample_n(5, seed = 42)
+        """
+        return from_polars(super().sample(n = n, seed = seed, with_replacement = with_replacement))
+
+    def sample_frac(self, fraction, seed = None, with_replacement = False):
+        """
+        Randomly sample a fraction of rows
+
+        Parameters
+        ----------
+        fraction : float
+            Fraction of rows to sample (between 0 and 1).
+        seed : int, optional
+            Random seed for reproducibility.
+        with_replacement : bool
+            Whether to sample with replacement.
+
+        Returns
+        -------
+        tibble
+            A tibble with a random fraction of rows.
+
+        Examples
+        --------
+        >>> df.sample_frac(0.5, seed = 42)
+        """
+        return from_polars(super().sample(fraction = fraction, seed = seed, with_replacement = with_replacement))
+
+    def complete(self, *cols, fill = None):
+        """
+        Complete a DataFrame with all combinations of specified columns
+
+        Parameters
+        ----------
+        *cols : str
+            Column names to find all combinations of.
+        fill : dict, optional
+            Dictionary of column names to fill values for missing combinations.
+
+        Returns
+        -------
+        tibble
+            A tibble with all combinations of the specified columns,
+            with missing values filled according to fill parameter.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = [1, 1, 2], y = ['a', 'b', 'a'], val = [10, 20, 30])
+        >>> df.complete('x', 'y')
+        """
+        cols = list(cols)
+        unique_values = [self.pull(c).unique().sort() for c in cols]
+
+        # Build all combinations
+        from itertools import product as iterproduct
+        combos = list(iterproduct(*[v.to_list() for v in unique_values]))
+        all_combos = tibble(**{c: [row[i] for row in combos] for i, c in enumerate(cols)})
+
+        # Left join to get existing data
+        result = all_combos.left_join(self, on = cols)
+
+        # Fill missing values
+        if fill is not None:
+            fill_exprs = []
+            for col_name, value in fill.items():
+                if col_name in result.names:
+                    fill_exprs.append(pl.col(col_name).fill_null(value).alias(col_name))
+            if fill_exprs:
+                result = result.mutate(*fill_exprs)
+
+        return result
+
+    def describe(self):
+        """
+        Generate summary statistics for all columns
+
+        Returns
+        -------
+        tibble
+            A tibble with summary statistics including column name, type,
+            count of non-null values, null count, unique count, and for
+            numeric columns: mean, std, min, 25%, 50%, 75%, max.
+
+        Examples
+        --------
+        >>> df.describe()
+        """
+        stats_rows = []
+        for col_name in self.names:
+            col_series = self.to_polars().get_column(col_name)
+            dtype = col_series.dtype
+            row = {
+                'column': col_name,
+                'dtype': str(dtype),
+                'count': col_series.len(),
+                'null_count': col_series.null_count(),
+                'n_unique': col_series.n_unique(),
+            }
+            if dtype.is_numeric():
+                row['mean'] = col_series.mean()
+                row['std'] = col_series.std()
+                row['min'] = col_series.min()
+                row['p25'] = col_series.quantile(0.25)
+                row['median'] = col_series.quantile(0.5)
+                row['p75'] = col_series.quantile(0.75)
+                row['max'] = col_series.max()
+            else:
+                row['mean'] = None
+                row['std'] = None
+                row['min'] = None
+                row['p25'] = None
+                row['median'] = None
+                row['p75'] = None
+                row['max'] = None
+            stats_rows.append(row)
+        if not stats_rows:
+            return tibble()
+        return tibble(**{k: [r[k] for r in stats_rows] for k in stats_rows[0]})
+
+    def replace_na(self, replace = None):
+        """
+        Replace null values in specified columns
+
+        Parameters
+        ----------
+        replace : dict
+            Dictionary mapping column names to replacement values.
+
+        Returns
+        -------
+        tibble
+            A tibble with nulls replaced.
+
+        Examples
+        --------
+        >>> df.replace_na({'x': 0, 'y': 'missing'})
+        """
+        if replace is None:
+            return self
+        exprs = [pl.col(col_name).fill_null(value).alias(col_name)
+                 for col_name, value in replace.items()
+                 if col_name in self.names]
+        if not exprs:
+            return self
+        return self.mutate(*exprs)
+
+    def get_dupes(self, *cols):
+        """
+        Find duplicate rows
+
+        Parameters
+        ----------
+        *cols : str
+            Column names to check for duplicates. If empty, checks all columns.
+
+        Returns
+        -------
+        tibble
+            A tibble containing duplicate rows with a 'dupe_count' column.
+
+        Examples
+        --------
+        >>> df.get_dupes('x', 'y')
+        """
+        if len(cols) == 0:
+            check_cols = self.names
+        else:
+            check_cols = list(cols)
+
+        counts = (self.to_polars()
+                  .group_by(check_cols)
+                  .agg(pl.len().alias('dupe_count'))
+                  .filter(pl.col('dupe_count') > 1))
+
+        return from_polars(
+            self.to_polars()
+            .join(counts, on=check_cols, how='inner')
+        ).arrange('dupe_count', *check_cols)
+
+    def assert_no_nulls(self, *cols):
+        """
+        Assert that specified columns contain no null values
+
+        Parameters
+        ----------
+        *cols : str
+            Column names to check. If empty, checks all columns.
+
+        Returns
+        -------
+        tibble
+            Returns self if assertion passes.
+
+        Raises
+        ------
+        AssertionError
+            If any null values are found.
+
+        Examples
+        --------
+        >>> df.assert_no_nulls('x', 'y')
+        """
+        check_cols = list(cols) if len(cols) > 0 else self.names
+        for col_name in check_cols:
+            null_count = self.to_polars().get_column(col_name).null_count()
+            if null_count > 0:
+                raise AssertionError(f"Column '{col_name}' has {null_count} null values")
+        return self
+
+    def assert_unique(self, *cols):
+        """
+        Assert that specified columns have unique combinations
+
+        Parameters
+        ----------
+        *cols : str
+            Column names to check. If empty, checks all columns.
+
+        Returns
+        -------
+        tibble
+            Returns self if assertion passes.
+
+        Raises
+        ------
+        AssertionError
+            If duplicate combinations are found.
+
+        Examples
+        --------
+        >>> df.assert_unique('id')
+        """
+        check_cols = list(cols) if len(cols) > 0 else self.names
+        n_rows = self.nrow
+        n_unique = self.select(check_cols).distinct().nrow
+        if n_unique < n_rows:
+            n_dupes = n_rows - n_unique
+            raise AssertionError(f"Found {n_dupes} duplicate rows across columns {check_cols}")
+        return self
+
+    def to_markdown(self):
+        """
+        Render the tibble as a Markdown table string
+
+        Returns
+        -------
+        str
+            A Markdown-formatted table string.
+
+        Examples
+        --------
+        >>> print(df.to_markdown())
+        """
+        headers = self.names
+        header_row = '| ' + ' | '.join(headers) + ' |'
+        sep_row = '| ' + ' | '.join(['---'] * len(headers)) + ' |'
+        rows = []
+        df_pl = self.to_polars()
+        for row in df_pl.iter_rows():
+            row_vals = [str(v) for v in row]
+            rows.append('| ' + ' | '.join(row_vals) + ' |')
+        return '\n'.join([header_row, sep_row] + rows)
+
+    # Not tidy functions, but useful from pandas/polars
     # -------------------------------------------------
     def replace(self, rep, regex=False):
         """
@@ -2891,7 +3359,6 @@ _allowed_methods = [
 _polars_methods = [
     'apply',
     'columns',
-    'describe',
     'downsample',
     'drop_duplicates',
     'explode',

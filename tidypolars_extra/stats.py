@@ -9,7 +9,13 @@ __all__ = [
     "log", "log10",
     "max", "mean", "median", "min", "n",
      "quantile", "sd", "sqrt", "sum", "var", "rank",
-    "floor", 'scale'
+    "floor", 'scale',
+    # Cumulative
+    "cumsum", "cumprod", "cummax", "cummin",
+    # Ranking
+    "percent_rank", "cume_dist", "ntile",
+    # Extra stats
+    "weighted_mean", "mode", "iqr", "mad", "zscore",
 ]
 
 
@@ -399,3 +405,213 @@ def scale(x):
     """
     x = _col_expr(x)
     return (x - x.mean()) / x.std()
+
+def zscore(x):
+    """
+    Standardize to z-scores (alias for scale)
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(z = tp.zscore('x'))
+    """
+    return scale(x)
+
+def cumsum(x):
+    """
+    Cumulative sum
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(csum = tp.cumsum('x'))
+    """
+    x = _col_expr(x)
+    return x.cum_sum()
+
+def cumprod(x):
+    """
+    Cumulative product
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(cprod = tp.cumprod('x'))
+    """
+    x = _col_expr(x)
+    return x.cum_prod()
+
+def cummax(x):
+    """
+    Cumulative maximum
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(cmax = tp.cummax('x'))
+    """
+    x = _col_expr(x)
+    return x.cum_max()
+
+def cummin(x):
+    """
+    Cumulative minimum
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(cmin = tp.cummin('x'))
+    """
+    x = _col_expr(x)
+    return x.cum_min()
+
+def percent_rank(x):
+    """
+    Compute percent rank (values between 0 and 1)
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(prank = tp.percent_rank('x'))
+    """
+    x = _col_expr(x)
+    r = x.rank(method='min')
+    denom = pl.len() - 1
+    # When n=1, percent_rank is defined as 0 (matching R behavior)
+    return pl.when(denom == 0).then(0.0).otherwise((r - 1) / denom)
+
+def cume_dist(x):
+    """
+    Compute cumulative distribution (proportion of values <= current value)
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.mutate(cd = tp.cume_dist('x'))
+    """
+    x = _col_expr(x)
+    r = x.rank(method='max')
+    return r / pl.len()
+
+def ntile(x, n):
+    """
+    Divide values into n roughly equal groups
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+    n : int
+        Number of groups
+
+    Examples
+    --------
+    >>> df.mutate(quartile = tp.ntile('x', 4))
+    """
+    x = _col_expr(x)
+    r = x.rank(method='ordinal')
+    total = pl.len()
+    # floor((rank - 1) * n / total) + 1, matching R's ntile behavior
+    return ((r - 1) * n / total).floor().cast(pl.Int64) + 1
+
+def weighted_mean(x, w):
+    """
+    Compute weighted mean
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column of values
+    w : Expr, Series
+        Column of weights
+
+    Examples
+    --------
+    >>> df.summarize(wm = tp.weighted_mean('x', 'w'))
+    """
+    x = _col_expr(x)
+    w = _col_expr(w)
+    return (x * w).sum() / w.sum()
+
+def mode(x):
+    """
+    Compute the statistical mode (most frequent value)
+
+    Returns the first mode if there are ties (non-deterministic for ties).
+    Use in summarize() context.
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.summarize(m = tp.mode('x'))
+    """
+    x = _col_expr(x)
+    return x.mode().first()
+
+def iqr(x):
+    """
+    Compute the interquartile range (Q3 - Q1)
+
+    Use in summarize() context only. Not suitable for mutate().
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.summarize(iqr_val = tp.iqr('x'))
+    """
+    x = _col_expr(x)
+    return x.quantile(0.75) - x.quantile(0.25)
+
+def mad(x):
+    """
+    Compute the median absolute deviation
+
+    Use in summarize() context only. Not suitable for mutate().
+
+    Parameters
+    ----------
+    x : Expr, Series
+        Column to operate on
+
+    Examples
+    --------
+    >>> df.summarize(mad_val = tp.mad('x'))
+    """
+    x = _col_expr(x)
+    return (x - x.median()).abs().median()

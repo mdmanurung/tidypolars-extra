@@ -14,7 +14,8 @@ from .utils import (
 __all__ = [
     "between", "case_when", "coalesce", "if_else",
     "is_finite", "is_in", "is_infinite", "is_not", "is_not_in", "is_not_null", "is_null",
-    "lead", "map", "n_distinct", "rep", "replace_null", "round", "row_number",
+    "lead", "map", "n_distinct", "n_missing", "pct_missing",
+    "rep", "replace_null", "round", "row_number",
 ]
 
 def between(x, left, right):
@@ -375,3 +376,45 @@ def map(cols, _fun):
     flatten = lambda cols: [item for series in cols for item in list(series)]
     res = pl.map_groups(cols, lambda cols: _fun(flatten(cols))).over(pl.int_range(pl.len()))
     return res
+
+def n_missing(x):
+    """
+    Count the number of null/missing values in a column
+
+    Parameters
+    ----------
+    x : Expr, str
+        Column to operate on
+
+    Returns
+    -------
+    Expr
+        Count of null values.
+
+    Examples
+    --------
+    >>> df.summarize(missing = tp.n_missing('x'))
+    """
+    x = _col_expr(x)
+    return x.null_count()
+
+def pct_missing(x):
+    """
+    Compute the percentage of null/missing values in a column
+
+    Parameters
+    ----------
+    x : Expr, str
+        Column to operate on
+
+    Returns
+    -------
+    Expr
+        Percentage of null values (0 to 100).
+
+    Examples
+    --------
+    >>> df.summarize(pct = tp.pct_missing('x'))
+    """
+    x = _col_expr(x)
+    return x.null_count() * 100.0 / pl.len()
