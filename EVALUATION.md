@@ -1,7 +1,7 @@
 # Codebase Evaluation: tidypolars-extra
 
-**Date:** 2026-04-06
-**Version evaluated:** 0.1.0 (commit `132ee17`)
+**Date:** 2026-04-07
+**Version evaluated:** 0.1.0 (commit `85f5e5c`)
 **Evaluator:** Automated analysis via Claude Code
 
 ---
@@ -12,8 +12,8 @@
 
 | Metric | Value |
 |--------|-------|
-| Source code | ~5,870 lines across 12 modules |
-| Test code | ~1,600 lines across 13 test files |
+| Source code | ~7,224 lines across 13 modules |
+| Test code | ~2,164 lines across 14 test files |
 | Bundled datasets | 8 (diamonds, flights, iris, mtcars, penguins, starwars, vote, wine) |
 | Python support | 3.9 – 3.13 |
 | Core dependencies | polars >=1.0, numpy, pandas, pyarrow |
@@ -23,18 +23,19 @@
 
 ## 2. Architecture
 
-The package extends `pl.DataFrame` with a `tibble` class (~2,970 lines) offering 50+ tidyverse-inspired methods. Supporting modules provide domain-specific functionality:
+The package extends `pl.DataFrame` with a `tibble` class (~3,439 lines) offering 79 tidyverse-inspired methods. Supporting modules provide domain-specific functionality:
 
 | Module | Lines | Purpose |
 |--------|-------|---------|
-| `tibble_df.py` | 2,972 | Core DataFrame class with dplyr/tidyr methods |
-| `io.py` | 545 | Multi-format file I/O (CSV, Excel, Stata, SPSS, R, Google Sheets) |
-| `stats.py` | 401 | Statistical functions (mean, sd, cor, rank, scale, etc.) |
-| `stringr.py` | 386 | String manipulation (stringr-style) |
-| `funs.py` | 377 | Special functions (case_when, if_else, coalesce, between, etc.) |
+| `tibble_df.py` | 3,439 | Core DataFrame class with dplyr/tidyr methods |
+| `stats.py` | 617 | Statistical functions (mean, sd, cor, rank, scale, cumsum, ntile, etc.) |
+| `io.py` | 566 | Multi-format file I/O (CSV, Excel, Stata, SPSS, R, Parquet, JSON, Google Sheets) |
+| `lubridate.py` | 561 | Date/time utilities (floor_date, ceiling_date, difftime, duration constructors) |
+| `stringr.py` | 537 | String manipulation (stringr-style) |
+| `funs.py` | 420 | Special functions (case_when, if_else, coalesce, between, n_missing, etc.) |
 | `io_r.py` | 307 | R file format support via rpy2 |
-| `lubridate.py` | 284 | Date/time utilities |
 | `helpers.py` | 218 | Column selection helpers (contains, starts_with, across, where) |
+| `forcats.py` | 175 | Factor manipulation (fct_infreq, fct_lump, fct_recode, fct_collapse, fct_rev) |
 | `utils.py` | 163 | Internal utility functions |
 | `type_conversion.py` | 143 | Type casting (as_character, as_factor, as_integer, etc.) |
 | `reexports.py` | 48 | Polars re-exports (col, lit, Expr, Series, dtypes) |
@@ -81,15 +82,12 @@ Zero return type annotations across the codebase. Parameter hints limited to `n:
 - No performance/regression tests
 - Optional features (SPSS via pyreadstat, R via rpy2) lack test coverage
 
-### 4.4 Missing Tidyverse Functions
-Before this evaluation, the package was missing several commonly-used functions that R users would immediately expect:
-- **Joins**: No `semi_join`, `anti_join`, `cross_join`
-- **Sampling**: No `sample_n`, `sample_frac`, `slice_sample`
-- **Data quality**: No `describe`/`skim`, `clean_names`, `get_dupes`
-- **Statistics**: No cumulative functions, `ntile`, `weighted_mean`, `iqr`
-- **Strings**: No `str_count`, `str_pad`, `str_split`, `str_squish`, `str_to_title`
-- **Factors**: No forcats-equivalent module (`fct_reorder`, `fct_infreq`, `fct_lump`)
-- **Dates**: No `today`, `now`, `difftime`, `floor_date`, `ceiling_date`
+### 4.4 Previously Missing Tidyverse Functions (Now Addressed)
+Before the v0.1.0 expansion, the package was missing several commonly-used functions that R users would immediately expect. These gaps have since been filled (see Section 5.1 for details). Remaining gaps include:
+- **Sampling**: `slice_sample` (unified sampling with grouping support)
+- **Data quality**: `skim()` (richer type-aware summary)
+- **Factors**: `fct_reorder` (reorder levels by summary of another variable)
+- **Slicing**: `slice_min` / `slice_max` (select rows with smallest/largest values)
 
 ### 4.5 Code Style Issues
 - Uses `== None` with bitwise `&` throughout (e.g., `(x == None) & (y == None)`) instead of idiomatic `x is None and y is None`
@@ -136,7 +134,7 @@ After implementation, a thorough audit identified and fixed:
 
 ### 5.3 Test Coverage
 
-- 73 new tests added (253 total, up from 180)
+- 73 new tests added (254 total, up from 180)
 - Edge case tests for: single-row DataFrames, empty DataFrames, boundary dates, special characters in column names, division by zero
 - All existing 180 tests continue to pass (no regressions)
 
@@ -209,9 +207,9 @@ After implementation, a thorough audit identified and fixed:
 | Metric | Before | After |
 |--------|--------|-------|
 | Source files | 12 | 13 (+forcats.py) |
-| Source lines | ~5,870 | ~7,800 |
+| Source lines | ~5,870 | ~7,224 |
 | Test files | 13 | 14 (+test_new_features.py) |
-| Test functions | 180 | 253 |
-| Public functions/methods | ~100 | ~155 |
+| Test functions | 180 | 254 |
+| Public functions/methods | ~100 | ~208 |
 | Modules | 10 | 11 |
 | Ruff violations | 0 | 0 |
