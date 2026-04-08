@@ -60,6 +60,7 @@ installation
 :maxdepth: 2
 :caption: Guide
 
+vignettes/00_overview
 vignettes/01_filter
 vignettes/02_arrange
 vignettes/03_select

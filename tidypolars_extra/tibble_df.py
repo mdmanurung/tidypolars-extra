@@ -2203,7 +2203,7 @@ class tibble(pl.DataFrame):
         Returns
         -------
         any
-            Result of fn(self, *args, **kwargs).
+            Result of ``fn(self, *args, **kwargs)``.
 
         Examples
         --------
