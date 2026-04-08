@@ -463,3 +463,162 @@ def test_funs_in_a_row():
     df.tail()
     df.arrange('x', 'y')
     assert True, "Functions in a row failed"
+
+
+# -------------------------------------------------------------
+# Ported dplyr/tidyr functions: drop_na, right_join, slice_min/max/sample,
+# separate_* family, rectangling family
+# -------------------------------------------------------------
+
+def test_drop_na():
+    """drop_na is an alias for drop_null"""
+    df = tp.tibble(x = [1, None, 3], y = [None, 2, 3])
+    actual = df.drop_na()
+    expected = tp.tibble(x = [3], y = [3])
+    assert actual.equals(expected), "drop_na failed"
+    assert type(actual) == tp.tibble, "drop_na didn't return a tibble"
+
+def test_drop_na_select():
+    """drop_na with column selection"""
+    df = tp.tibble(x = [1, None, 3], y = [None, 2, 3])
+    actual = df.drop_na('x')
+    expected = tp.tibble(x = [1, 3], y = [None, 3])
+    assert actual.equals(expected, null_equal = True), "drop_na with selection failed"
+
+def test_right_join():
+    """Can perform a right join"""
+    df1 = tp.tibble(x = ['a', 'a', 'b'], y = [1, 2, 3])
+    df2 = tp.tibble(x = ['a', 'c'], z = [10, 20])
+    actual = df1.right_join(df2).arrange('x')
+    expected = tp.tibble(y = [1, 2, None], x = ['a', 'a', 'c'], z = [10, 10, 20])
+    assert actual.equals(expected, null_equal = True), "right_join failed"
+    assert type(actual) == tp.tibble, "right_join didn't return a tibble"
+
+def test_slice_min():
+    """Can slice by smallest values"""
+    df = tp.tibble(x = [3, 1, 2], g = ['a', 'a', 'b'])
+    actual = df.slice_min('x', n = 1, with_ties = False)
+    expected = tp.tibble(x = [1], g = ['a'])
+    assert actual.equals(expected), "slice_min failed"
+    assert type(actual) == tp.tibble, "slice_min didn't return a tibble"
+
+def test_slice_min_ties():
+    """slice_min with_ties keeps tied rows"""
+    df = tp.tibble(x = [1, 1, 2, 3])
+    actual = df.slice_min('x', n = 1, with_ties = True).arrange('x')
+    expected = tp.tibble(x = [1, 1])
+    assert actual.equals(expected), "slice_min with ties failed"
+
+def test_slice_max():
+    """Can slice by largest values"""
+    df = tp.tibble(x = [3, 1, 2], g = ['a', 'a', 'b'])
+    actual = df.slice_max('x', n = 1, with_ties = False)
+    expected = tp.tibble(x = [3], g = ['a'])
+    assert actual.equals(expected), "slice_max failed"
+    assert type(actual) == tp.tibble, "slice_max didn't return a tibble"
+
+def test_slice_sample_n():
+    """slice_sample with n returns deterministic rows when seeded"""
+    df = tp.tibble(x = range(10))
+    actual = df.slice_sample(n = 3, seed = 42)
+    assert actual.nrow == 3, "slice_sample n failed"
+    assert type(actual) == tp.tibble, "slice_sample didn't return a tibble"
+
+def test_slice_sample_prop():
+    """slice_sample with prop returns deterministic fraction when seeded"""
+    df = tp.tibble(x = range(10))
+    actual = df.slice_sample(prop = 0.5, seed = 42)
+    assert actual.nrow == 5, "slice_sample prop failed"
+
+def test_separate_wider_delim():
+    """Can separate_wider_delim into named columns"""
+    df = tp.tibble(x = ['a_1', 'b_2', 'c_3'])
+    actual = df.separate_wider_delim('x', '_', names = ['letter', 'num']).arrange('letter')
+    expected = tp.tibble(letter = ['a', 'b', 'c'], num = ['1', '2', '3'])
+    assert actual.equals(expected), "separate_wider_delim failed"
+    assert type(actual) == tp.tibble, "separate_wider_delim didn't return a tibble"
+
+def test_separate_wider_position():
+    """Can separate_wider_position by character widths"""
+    df = tp.tibble(x = ['2024Q1', '2025Q2'])
+    actual = df.separate_wider_position('x', widths = {'year': 4, 'q': 2})
+    expected = tp.tibble(year = ['2024', '2025'], q = ['Q1', 'Q2'])
+    assert actual.equals(expected), "separate_wider_position failed"
+
+def test_separate_wider_regex():
+    """Can separate_wider_regex with a dict of named patterns"""
+    df = tp.tibble(x = ['id-001', 'id-002'])
+    actual = df.separate_wider_regex(
+        'x',
+        {'prefix': '[a-z]+', '_sep': '-', 'num': r'\d+'}
+    )
+    expected = tp.tibble(prefix = ['id', 'id'], num = ['001', '002'])
+    assert actual.equals(expected), "separate_wider_regex failed"
+
+def test_separate_longer_delim():
+    """Can separate_longer_delim into longer rows"""
+    df = tp.tibble(x = ['a,b', 'c'], y = [1, 2])
+    actual = df.separate_longer_delim('x', ',')
+    expected = tp.tibble(x = ['a', 'b', 'c'], y = [1, 1, 2])
+    assert actual.equals(expected), "separate_longer_delim failed"
+    assert type(actual) == tp.tibble, "separate_longer_delim didn't return a tibble"
+
+def test_separate_longer_position():
+    """Can separate_longer_position into fixed-width chunks"""
+    df = tp.tibble(x = ['abcd', 'ef'])
+    actual = df.separate_longer_position('x', 2)
+    expected = tp.tibble(x = ['ab', 'cd', 'ef'])
+    assert actual.equals(expected), "separate_longer_position failed"
+
+def test_separate_rows():
+    """separate_rows splits and explodes"""
+    df = tp.tibble(x = ['a,b', 'c'], y = [1, 2])
+    actual = df.separate_rows('x', sep = ',')
+    expected = tp.tibble(x = ['a', 'b', 'c'], y = [1, 1, 2])
+    assert actual.equals(expected), "separate_rows failed"
+
+def test_unnest_longer_list():
+    """unnest_longer on a list column behaves like explode"""
+    df = tp.tibble(id = [1, 2], vals = [[10, 20], [30]])
+    actual = df.unnest_longer('vals')
+    expected = tp.tibble(id = [1, 1, 2], vals = [10, 20, 30])
+    assert actual.equals(expected), "unnest_longer list failed"
+    assert type(actual) == tp.tibble, "unnest_longer didn't return a tibble"
+
+def test_unnest_wider_struct():
+    """unnest_wider on a struct column expands fields"""
+    df = tp.tibble(id = [1, 2]).mutate(
+        pt = pl.struct([pl.lit(1).alias('x'), pl.lit(2).alias('y')])
+    )
+    actual = df.unnest_wider('pt')
+    assert set(actual.names) == {'id', 'x', 'y'}, "unnest_wider struct failed"
+
+def test_unnest_wider_list():
+    """unnest_wider on a list column expands into positional columns"""
+    df = tp.tibble(id = [1, 2], vals = [[10, 20], [30, 40]])
+    actual = df.unnest_wider('vals')
+    expected = tp.tibble(id = [1, 2], vals_1 = [10, 30], vals_2 = [20, 40])
+    assert actual.equals(expected), "unnest_wider list failed"
+
+def test_hoist():
+    """hoist extracts named fields from a struct column"""
+    df = tp.tibble(id = [1, 2]).mutate(
+        meta = pl.struct([pl.lit('x').alias('name'), pl.lit(10).alias('age')])
+    )
+    actual = df.hoist('meta', nm = 'name', remove = True)
+    expected = tp.tibble(id = [1, 2], nm = ['x', 'x'])
+    assert actual.equals(expected), "hoist failed"
+
+def test_pack():
+    """pack bundles columns into a struct column"""
+    df = tp.tibble(x = [1, 2], y = [3, 4], z = ['a', 'b'])
+    actual = df.pack(position = ['x', 'y'])
+    assert 'position' in actual.names and 'x' not in actual.names, "pack failed"
+    assert actual.nrow == 2
+
+def test_unpack():
+    """unpack expands a struct column back into its component columns"""
+    df = tp.tibble(x = [1, 2], y = [3, 4], z = ['a', 'b'])
+    packed = df.pack(position = ['x', 'y'])
+    actual = packed.unpack('position')
+    assert set(actual.names) == {'x', 'y', 'z'}, "unpack failed"
