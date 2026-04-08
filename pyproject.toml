@@ -7,7 +7,7 @@ name = "tidypolars-extra"
 version = "0.1.0"
 description = "An extension to tidypolars4sci with additional functionalities for scientific data analysis."
 authors = [{name = "Diogo Ferrari", email = "diogoferrari@gmail.com"}]
-maintainers = [{name = "Michael David Manurung", email = "mdmanurung@users.noreply.github.com"}]
+maintainers = [{name = "Mikhael Dito Manurung", email = "mikhael.manurung@gmail.com"}]
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
