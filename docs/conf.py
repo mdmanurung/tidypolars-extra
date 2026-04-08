@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 project = "tidypolars-extra"
 copyright = "2024, tidypolars-extra contributors"
-author = "Michael David Manurung"
+author = "Mikhael Dito Manurung"
 
 try:
     from importlib.metadata import version as get_version
