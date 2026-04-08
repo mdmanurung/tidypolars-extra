@@ -78,18 +78,26 @@ class tibble(pl.DataFrame):
         _tidypolars_methods = [
             'arrange', 'bind_cols', 'bind_rows', 'colnames', 'clone', 'count',
             'crossing',
-            'distinct', 'drop', 'drop_null', 'head', 'fill', 'filter',
-            'group_by', 
+            'distinct', 'drop', 'drop_na', 'drop_null', 'head', 'fill', 'filter',
+            'group_by',
+            'hoist',
             'inner_join', 'left_join', 'mutate', 'names', 'nest',
             'nrow', 'ncol',
-            'full_join', 'pivot_longer', 'pivot_wider', 'print',
+            'full_join', 'pack', 'pivot_longer', 'pivot_wider', 'print',
             'pull', 'relocate', 'rename',
             'replace',
-            'replace_null', 'select',
-            'separate', 'set_names',
-            'slice', 'slice_head', 'slice_tail', 'summarize', 'tail',
+            'replace_null', 'right_join', 'select',
+            'separate',
+            'separate_longer_delim', 'separate_longer_position',
+            'separate_rows',
+            'separate_wider_delim', 'separate_wider_position',
+            'separate_wider_regex',
+            'set_names',
+            'slice', 'slice_head', 'slice_max', 'slice_min', 'slice_sample',
+            'slice_tail', 'summarize', 'tail',
             'save_data',
-            'to_pandas', 'to_polars', 'unnest'
+            'to_pandas', 'to_polars', 'unnest', 'unnest_longer', 'unnest_wider',
+            'unpack'
         ]
         return _tidypolars_methods
     
@@ -314,7 +322,30 @@ class tibble(pl.DataFrame):
         else:
             out = super().drop_nulls(args)
         return out.pipe(from_polars)
-    
+
+    def drop_na(self, *args):
+        """
+        Drop rows containing missing values. Alias for :meth:`drop_null`,
+        matching tidyr's ``drop_na()`` spelling.
+
+        Parameters
+        ----------
+        *args : str
+            Columns to drop nulls from (defaults to all)
+
+        Returns
+        -------
+        tibble
+            Tibble with rows containing nulls in ``args`` removed.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = [1, None, 3], y = [None, 'b', 'c'])
+        >>> df.drop_na()
+        >>> df.drop_na('x')
+        """
+        return self.drop_null(*args)
+
     def equals(self, other, null_equal = True):
         """
         Check if two tibbles are equal
@@ -483,6 +514,42 @@ class tibble(pl.DataFrame):
         if (left_on == None) & (right_on == None) & (on == None):
             on = list(set(self.names) & set(df.names))
         return super().join(df, on, 'left',  left_on = left_on, right_on= right_on, suffix= suffix).pipe(from_polars)
+
+    def right_join(self, df, left_on = None, right_on = None, on = None, suffix = '_right'):
+        """
+        Perform a right join
+
+        Parameters
+        ----------
+        df : tibble
+            DataFrame to join with.
+        left_on : str, list
+            Join column(s) of the left DataFrame.
+        right_on : str, list
+            Join column(s) of the right DataFrame.
+        on: str, list
+            Join column(s) of both DataFrames. If set, `left_on` and `right_on` should be None.
+        suffix : str
+            Suffix to append to columns with a duplicate name.
+
+        Returns
+        -------
+        tibble
+            Every row of ``df`` with matching columns from ``self``.
+            Unmatched rows on the left side receive null values.
+
+        Examples
+        --------
+        >>> df1.right_join(df2)
+        >>> df1.right_join(df2, on = 'x')
+        >>> df1.right_join(df2, left_on = 'left_x', right_on = 'x')
+        """
+        if (left_on == None) & (right_on == None) & (on == None):
+            on = list(set(self.names) & set(df.names))
+        return super().join(df, on, 'right',
+                            left_on = left_on,
+                            right_on = right_on,
+                            suffix = suffix).pipe(from_polars)
 
     def mutate(self, *args, by = None, **kwargs):
         """
@@ -1058,6 +1125,200 @@ class tibble(pl.DataFrame):
             out = out.drop(sep_col)
         return out
 
+    def separate_wider_delim(self, sep_col, delim, names, *, remove = True,
+                             too_few = 'error', too_many = 'error'):
+        """
+        Split a string column into several columns using a delimiter.
+
+        Parameters
+        ----------
+        sep_col : str
+            Column to split.
+        delim : str
+            Delimiter to split on.
+        names : list
+            Names of the resulting columns.
+        remove : bool
+            If True (default) drop the original column.
+        too_few : str
+            One of ``'error'`` (default) or ``'align_start'``. When
+            ``'error'``, raises if a row produces fewer fields than
+            ``len(names)``.
+        too_many : str
+            One of ``'error'`` (default) or ``'drop'``. When ``'error'``,
+            raises if a row produces more fields than ``len(names)``.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['a_1', 'b_2'])
+        >>> df.separate_wider_delim('x', '_', names = ['letter', 'num'])
+        """
+        if too_few not in ('error', 'align_start'):
+            raise NotImplementedError(f"too_few={too_few!r} is not supported")
+        if too_many not in ('error', 'drop'):
+            raise NotImplementedError(f"too_many={too_many!r} is not supported")
+
+        n_parts = len(names)
+        df = self.to_polars()
+        split_col = pl.col(sep_col).str.split(delim)
+        lens = df.select(split_col.list.len().alias('__n__')).get_column('__n__')
+        if too_few == 'error' and (lens < n_parts).any():
+            raise ValueError(
+                f"separate_wider_delim: some rows in {sep_col!r} produced "
+                f"fewer than {n_parts} fields"
+            )
+        if too_many == 'error' and (lens > n_parts).any():
+            raise ValueError(
+                f"separate_wider_delim: some rows in {sep_col!r} produced "
+                f"more than {n_parts} fields"
+            )
+
+        exprs = [
+            pl.col(sep_col).str.split(delim).list.get(i, null_on_oob = True).alias(name)
+            for i, name in enumerate(names)
+        ]
+        out = df.with_columns(exprs)
+        if remove:
+            out = out.drop(sep_col)
+        return out.pipe(from_polars)
+
+    def separate_wider_position(self, sep_col, widths, *, remove = True):
+        """
+        Split a string column into several columns by character positions.
+
+        Parameters
+        ----------
+        sep_col : str
+            Column to split.
+        widths : dict
+            Mapping of new column name → width in characters.
+        remove : bool
+            If True (default) drop the original column.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['2024Q1', '2025Q2'])
+        >>> df.separate_wider_position('x', widths = {'year': 4, 'q': 2})
+        """
+        offset = 0
+        exprs = []
+        for name, width in widths.items():
+            exprs.append(pl.col(sep_col).str.slice(offset, width).alias(name))
+            offset += width
+        out = self.to_polars().with_columns(exprs)
+        if remove:
+            out = out.drop(sep_col)
+        return out.pipe(from_polars)
+
+    def separate_wider_regex(self, sep_col, patterns, *, remove = True):
+        """
+        Split a string column using a regular expression with named groups.
+
+        Parameters
+        ----------
+        sep_col : str
+            Column to split.
+        patterns : str or dict
+            Either a regex string containing named capturing groups, or a
+            dict ``{name: sub_pattern}`` which is assembled into a single
+            regex of named groups in the given order.
+        remove : bool
+            If True (default) drop the original column.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['id-001', 'id-002'])
+        >>> df.separate_wider_regex('x', {'prefix': '[a-z]+', '_sep': '-', 'num': '\\d+'})
+        """
+        if isinstance(patterns, dict):
+            regex = ''.join(f'(?P<{k}>{v})' for k, v in patterns.items())
+            keep = [k for k in patterns.keys() if not k.startswith('_')]
+        else:
+            regex = patterns
+            keep = None
+        expr = pl.col(sep_col).str.extract_groups(regex)
+        out = (self.to_polars()
+               .with_columns(expr.alias('__sep_struct__'))
+               .unnest('__sep_struct__'))
+        if keep is not None:
+            drop_unnamed = [c for c in out.columns
+                            if c in patterns and c.startswith('_')]
+            if drop_unnamed:
+                out = out.drop(drop_unnamed)
+        if remove:
+            out = out.drop(sep_col)
+        return out.pipe(from_polars)
+
+    def separate_longer_delim(self, sep_col, delim):
+        """
+        Split a string column by ``delim`` into longer rows.
+
+        Parameters
+        ----------
+        sep_col : str
+            Column to split.
+        delim : str
+            Delimiter to split on.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['a,b', 'c'])
+        >>> df.separate_longer_delim('x', ',')
+        """
+        out = (self.to_polars()
+               .with_columns(pl.col(sep_col).str.split(delim))
+               .explode(sep_col))
+        return out.pipe(from_polars)
+
+    def separate_longer_position(self, sep_col, width):
+        """
+        Split each string into chunks of ``width`` characters and convert
+        into longer rows.
+
+        Parameters
+        ----------
+        sep_col : str
+            Column to split.
+        width : int
+            Width of each chunk in characters.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['abcd', 'efgh'])
+        >>> df.separate_longer_position('x', 2)
+        """
+        def _chunk(s):
+            if s is None:
+                return None
+            return [s[i:i + width] for i in range(0, len(s), width)]
+        out = (self.to_polars()
+               .with_columns(pl.col(sep_col)
+                             .map_elements(_chunk, return_dtype = pl.List(pl.Utf8)))
+               .explode(sep_col))
+        return out.pipe(from_polars)
+
+    def separate_rows(self, *cols, sep = ','):
+        """
+        Split the given columns on ``sep`` and explode them into longer rows.
+        Superseded by :meth:`separate_longer_delim` but kept for tidyr parity.
+
+        Parameters
+        ----------
+        *cols : str
+            Columns to split and explode.
+        sep : str
+            Delimiter to split on (default: ``','``).
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = ['a,b', 'c'], y = [1, 2])
+        >>> df.separate_rows('x', sep = ',')
+        """
+        out = self.to_polars()
+        for c in cols:
+            out = out.with_columns(pl.col(c).str.split(sep)).explode(c)
+        return out.pipe(from_polars)
+
     def set_names(self, nm = None):
         """
         Change the column names of the data frame
@@ -1235,7 +1496,113 @@ class tibble(pl.DataFrame):
             df = super(tibble, self).tail(n)
         df = df.select(col_order)
         return df.pipe(from_polars)
-    
+
+    def slice_min(self, order_by, n = 1, *, with_ties = True, by = None):
+        """
+        Select rows with the smallest values of ``order_by``.
+
+        Parameters
+        ----------
+        order_by : str, list
+            Column(s) to order by (ascending).
+        n : int
+            Number of rows to return per group.
+        with_ties : bool
+            If True (default), include tied rows even if that exceeds ``n``.
+        by : str, list, optional
+            Columns to group by.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = [1, 2, 2, 3], g = ['a', 'a', 'b', 'b'])
+        >>> df.slice_min('x', n = 1)
+        >>> df.slice_min('x', n = 1, by = 'g')
+        """
+        order_cols = _as_list(order_by)
+        if with_ties:
+            def _take(frame):
+                return frame.filter(
+                    pl.struct(order_cols).rank(method = 'min') <= n
+                )
+        else:
+            def _take(frame):
+                return frame.sort(order_cols).head(n)
+        if _uses_by(by):
+            out = super(tibble, self).group_by(by).map_groups(_take)
+        else:
+            out = _take(super(tibble, self))
+        return out.pipe(from_polars)
+
+    def slice_max(self, order_by, n = 1, *, with_ties = True, by = None):
+        """
+        Select rows with the largest values of ``order_by``.
+
+        Parameters
+        ----------
+        order_by : str, list
+            Column(s) to order by (descending).
+        n : int
+            Number of rows to return per group.
+        with_ties : bool
+            If True (default), include tied rows even if that exceeds ``n``.
+        by : str, list, optional
+            Columns to group by.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = [1, 2, 2, 3], g = ['a', 'a', 'b', 'b'])
+        >>> df.slice_max('x', n = 1)
+        >>> df.slice_max('x', n = 1, by = 'g')
+        """
+        order_cols = _as_list(order_by)
+        if with_ties:
+            def _take(frame):
+                return frame.filter(
+                    pl.struct(order_cols).rank(method = 'min', descending = True) <= n
+                )
+        else:
+            def _take(frame):
+                return frame.sort(order_cols, descending = True).head(n)
+        if _uses_by(by):
+            out = super(tibble, self).group_by(by).map_groups(_take)
+        else:
+            out = _take(super(tibble, self))
+        return out.pipe(from_polars)
+
+    def slice_sample(self, n = None, *, prop = None, replace = False, seed = None, by = None):
+        """
+        Randomly sample rows. Modern replacement for :meth:`sample_n` and
+        :meth:`sample_frac`.
+
+        Parameters
+        ----------
+        n : int, optional
+            Number of rows to sample. Provide exactly one of ``n`` or ``prop``.
+        prop : float, optional
+            Fraction of rows to sample (between 0 and 1).
+        replace : bool
+            Whether to sample with replacement.
+        seed : int, optional
+            Random seed for reproducibility.
+        by : str, list, optional
+            Columns to group by; sampling happens within each group.
+
+        Examples
+        --------
+        >>> df.slice_sample(n = 3, seed = 42)
+        >>> df.slice_sample(prop = 0.5, by = 'g', seed = 42)
+        """
+        assert (n is None) ^ (prop is None), "Provide exactly one of `n` or `prop`."
+        def _take(frame):
+            if n is not None:
+                return frame.sample(n = n, with_replacement = replace, seed = seed)
+            return frame.sample(fraction = prop, with_replacement = replace, seed = seed)
+        if _uses_by(by):
+            out = super(tibble, self).group_by(by).map_groups(_take)
+        else:
+            out = _take(super(tibble, self))
+        return out.pipe(from_polars)
+
     def summarise(self, *args,
                   by = None,
                   **kwargs):
@@ -1474,6 +1841,181 @@ class tibble(pl.DataFrame):
                     df_target = df_target.with_columns(pl.col(col).cast(enum_dtype))
 
         return from_polars(df_target.select(df_target.columns))
+
+    def unnest_longer(self, col_name, *, values_to = None, indices_to = None):
+        """
+        Turn each element of a list- or struct-column into its own row.
+
+        For list columns, this behaves like ``DataFrame.explode``. For struct
+        columns, each row is expanded into one row per field, with the field
+        name going into ``indices_to`` and the field value into ``values_to``.
+
+        Parameters
+        ----------
+        col_name : str
+            Name of the list or struct column to unnest.
+        values_to : str, optional
+            Name of the output value column. For list columns this renames
+            the exploded column. For struct columns this names the value
+            column; defaults to ``col_name``.
+        indices_to : str, optional
+            For struct columns, the name of the field-name column. Defaults
+            to ``f"{col_name}_id"``.
+
+        Examples
+        --------
+        >>> df = tp.tibble(id = [1, 2], vals = [[10, 20], [30]])
+        >>> df.unnest_longer('vals')
+        """
+        df = self.to_polars()
+        dtype = df.schema[col_name]
+        if isinstance(dtype, pl.List):
+            out = df.explode(col_name)
+            if values_to is not None:
+                out = out.rename({col_name: values_to})
+            return out.pipe(from_polars)
+        if isinstance(dtype, pl.Struct):
+            fields = [f.name for f in dtype.fields]
+            idx = indices_to or f'{col_name}_id'
+            val = values_to or col_name
+            other = [c for c in df.columns if c != col_name]
+            parts = []
+            for name in fields:
+                parts.append(
+                    df.select(
+                        *[pl.col(c) for c in other],
+                        pl.lit(name).alias(idx),
+                        pl.col(col_name).struct.field(name).alias(val),
+                    )
+                )
+            out = pl.concat(parts, how = 'vertical_relaxed')
+            ordered = other + [idx, val]
+            return out.select(ordered).pipe(from_polars)
+        raise TypeError(
+            f"unnest_longer requires a List or Struct column, got {dtype}"
+        )
+
+    def unnest_wider(self, col_name, *, names_sep = None):
+        """
+        Turn each element of a struct- or list-column into its own column.
+
+        Parameters
+        ----------
+        col_name : str
+            Name of the column to unnest.
+        names_sep : str, optional
+            If provided, the output column names become
+            ``f"{col_name}{names_sep}{field}"`` to avoid collisions.
+
+        Examples
+        --------
+        >>> df = tp.tibble(id = [1, 2], pt = [{'x': 1, 'y': 2}, {'x': 3, 'y': 4}])
+        >>> df.unnest_wider('pt')
+        """
+        df = self.to_polars()
+        dtype = df.schema[col_name]
+        if isinstance(dtype, pl.Struct):
+            field_names = [f.name for f in dtype.fields]
+            if names_sep is not None:
+                renamed = {f: f'{col_name}{names_sep}{f}' for f in field_names}
+                out = (df.with_columns(pl.col(col_name).struct.rename_fields(
+                           [renamed[f] for f in field_names]))
+                       .unnest(col_name))
+            else:
+                out = df.unnest(col_name)
+            return out.pipe(from_polars)
+        if isinstance(dtype, pl.List):
+            width = df.select(pl.col(col_name).list.len().max()).item() or 0
+            sep = names_sep if names_sep is not None else '_'
+            exprs = [
+                pl.col(col_name).list.get(i, null_on_oob = True)
+                  .alias(f'{col_name}{sep}{i + 1}')
+                for i in range(width)
+            ]
+            out = df.with_columns(exprs).drop(col_name)
+            return out.pipe(from_polars)
+        raise TypeError(
+            f"unnest_wider requires a List or Struct column, got {dtype}"
+        )
+
+    def hoist(self, col_name, *, remove = False, **fields):
+        """
+        Pull named elements out of a list- or struct-column into top-level columns.
+
+        Parameters
+        ----------
+        col_name : str
+            Name of the list or struct column to reach into.
+        remove : bool
+            If True, drop the original column after hoisting.
+        **fields : str, int, or list
+            Each keyword defines a new top-level column. The value is a
+            path into the list/struct column: a field name, an integer
+            list index, or a list of such steps for nested access.
+
+        Examples
+        --------
+        >>> df = tp.tibble(meta = [{'a': 1, 'b': 2}, {'a': 3, 'b': 4}])
+        >>> df.hoist('meta', a = 'a')
+        """
+        df = self.to_polars()
+        exprs = []
+        for new_name, path in fields.items():
+            expr = pl.col(col_name)
+            steps = path if isinstance(path, (list, tuple)) else [path]
+            for step in steps:
+                if isinstance(step, int):
+                    expr = expr.list.get(step, null_on_oob = True)
+                else:
+                    expr = expr.struct.field(step)
+            exprs.append(expr.alias(new_name))
+        out = df.with_columns(exprs)
+        if remove:
+            out = out.drop(col_name)
+        return out.pipe(from_polars)
+
+    def pack(self, **groups):
+        """
+        Pack several columns into one or more struct columns.
+
+        Parameters
+        ----------
+        **groups : list or str
+            Each keyword defines a new struct column. The value is a
+            list of existing column names to pack into that struct.
+
+        Examples
+        --------
+        >>> df = tp.tibble(x = [1, 2], y = [3, 4], z = ['a', 'b'])
+        >>> df.pack(position = ['x', 'y'])
+        """
+        df = self.to_polars()
+        to_drop = []
+        for new_name, cols in groups.items():
+            cols = _as_list(cols)
+            df = df.with_columns(pl.struct(cols).alias(new_name))
+            to_drop.extend(c for c in cols if c not in groups)
+        df = df.drop(to_drop)
+        return df.pipe(from_polars)
+
+    def unpack(self, *cols):
+        """
+        Unpack one or more struct columns into their component columns.
+
+        Parameters
+        ----------
+        *cols : str
+            Names of the struct columns to unpack.
+
+        Examples
+        --------
+        >>> df = tp.tibble(id = [1, 2]).pack(pt = ['id'])  # contrived
+        >>> df.unpack('pt')
+        """
+        df = self.to_polars()
+        for c in cols:
+            df = df.unnest(c)
+        return df.pipe(from_polars)
 
     def crossing(self, *args, **kwargs):
         """
